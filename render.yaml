@@ -9,7 +9,7 @@ services:
     name: cybrscan
     runtime: python
     buildCommand: "./build.sh"
-    startCommand: "gunicorn wsgi:app"
+    startCommand: "gunicorn wsgi_standalone:application"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
