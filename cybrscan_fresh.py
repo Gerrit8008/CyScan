@@ -277,7 +277,13 @@ def logout():
 @login_required
 def dashboard():
     """User dashboard"""
-    return render_template('client/client-dashboard.html', user=current_user)
+    return render_template('client/client-dashboard.html', 
+                         user=current_user,
+                         scans_used=5,
+                         scans_limit=100,
+                         scanners_count=2,
+                         recent_scans=[],
+                         subscription_levels=SUBSCRIPTION_TIERS)
 
 @app.route('/client/dashboard')
 @login_required
