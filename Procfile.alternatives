@@ -1,0 +1,13 @@
+# Alternative Procfile configurations - use one of these in Procfile
+
+# Option 1: Simple WSGI application (recommended)
+web: gunicorn simple_app:application
+
+# Option 2: Flask app from simple_app.py  
+web: gunicorn simple_app:app
+
+# Option 3: Flask app from app_main.py
+web: gunicorn app_main:app
+
+# Option 4: Manual override in Render dashboard
+# Set Start Command to: gunicorn simple_app:application
