@@ -1,54 +1,34 @@
 """
-WSGI entry point for CybrScan application - Debug version
+WSGI entry point for CybrScan application
 """
 import os
 import sys
 import logging
-import traceback
 
-# Setup detailed logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# Setup logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Add current directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-logger.info("🚀 Starting WSGI with detailed debugging...")
-
 try:
-    # Step-by-step import debugging
-    logger.info("📦 Testing config import...")
-    from config import get_config
-    logger.info("✅ Config imported successfully")
-    
-    logger.info("📦 Testing models import...")
-    from models import db
-    logger.info("✅ Models imported successfully")
-    
-    logger.info("📦 Testing main app import...")
+    # Import the full CybrScan application
     from app import app
     logger.info("✅ Successfully imported full CybrScan app")
     application = app
     
 except Exception as e:
-    logger.error("❌ DETAILED ERROR ANALYSIS:")
-    logger.error(f"Error type: {type(e).__name__}")
-    logger.error(f"Error message: {str(e)}")
+    logger.error(f"❌ Failed to import main app: {e}")
+    logger.info("🔄 Falling back to minimal app")
     
-    # Print full traceback with line numbers
-    tb_lines = traceback.format_exc().split('\n')
-    for i, line in enumerate(tb_lines):
-        if line.strip():
-            logger.error(f"TRACE[{i:02d}]: {line}")
-    
-    logger.info("🔄 Trying minimal app fallback...")
     try:
         from app_minimal import app
-        logger.info("✅ Minimal app imported successfully")
+        logger.info("✅ Minimal app loaded as fallback")
         application = app
     except Exception as e2:
-        logger.error(f"❌ Minimal app also failed: {e2}")
-        logger.info("🔄 Using basic Flask fallback")
+        logger.error(f"❌ Even fallback failed: {e2}")
+        raise
     
     # Fallback to a simple working app
     try:

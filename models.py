@@ -281,7 +281,7 @@ class BillingTransaction(db.Model):
     
     # Metadata
     description = db.Column(db.Text)
-    metadata = db.Column(db.JSON)
+    transaction_metadata = db.Column(db.JSON)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     processed_at = db.Column(db.DateTime)
