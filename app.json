@@ -1,0 +1,26 @@
+{
+  "name": "CybrScan",
+  "description": "White-Label Security Scanning Platform for MSPs",
+  "keywords": ["flask", "python", "security", "scanner"],
+  "website": "https://cybrscan.onrender.com",
+  "repository": "https://github.com/yourusername/cybrscan",
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "free"
+    }
+  },
+  "scripts": {
+    "postdeploy": "python init_db.py"
+  },
+  "env": {
+    "FLASK_ENV": {
+      "value": "production"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
