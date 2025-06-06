@@ -110,11 +110,11 @@ if CORS:
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # Import and register blueprints
-from app.auth.routes import auth_bp
-from app.admin import admin_bp
-from app.client import client_bp
-from app.scanner import scanner_bp
-from app.billing import billing_bp
+from app_modules.auth.routes import auth_bp
+from app_modules.admin import admin_bp
+from app_modules.client import client_bp
+from app_modules.scanner import scanner_bp
+from app_modules.billing import billing_bp
 
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(admin_bp, url_prefix='/admin')
