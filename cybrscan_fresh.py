@@ -11,6 +11,52 @@ import secrets
 import re
 from datetime import datetime
 
+# Simple subscription tiers for templates
+SUBSCRIPTION_TIERS = {
+    'basic': {
+        'name': 'Basic',
+        'price': 0.00,
+        'period': 'forever',
+        'description': 'Perfect for trying out our platform',
+        'features': {
+            'scanners': 1,
+            'scans_per_month': 10,
+            'white_label': False,
+            'branding': 'Basic branding',
+            'reports': 'Email reports',
+            'support': 'Community support'
+        }
+    },
+    'starter': {
+        'name': 'Starter',
+        'price': 29.99,
+        'period': 'month',
+        'description': 'Great for small MSPs',
+        'features': {
+            'scanners': 5,
+            'scans_per_month': 100,
+            'white_label': True,
+            'branding': 'Custom branding',
+            'reports': 'PDF & Email reports',
+            'support': 'Email support'
+        }
+    },
+    'professional': {
+        'name': 'Professional',
+        'price': 99.99,
+        'period': 'month',
+        'description': 'Perfect for growing MSPs',
+        'features': {
+            'scanners': 25,
+            'scans_per_month': 500,
+            'white_label': True,
+            'branding': 'Full custom branding',
+            'reports': 'Advanced reporting',
+            'support': 'Priority support'
+        }
+    }
+}
+
 # Create Flask app
 app = Flask(__name__)
 
@@ -43,12 +89,12 @@ def load_user(user_id):
 @app.route('/')
 def index():
     """Landing page with original CybrScan design"""
-    return render_template('index.html', subscription_levels={})
+    return render_template('index.html', subscription_levels=SUBSCRIPTION_TIERS)
 
 @app.route('/pricing')
 def pricing():
     """Pricing page"""
-    return render_template('pricing.html', subscription_levels={})
+    return render_template('pricing.html', subscription_levels=SUBSCRIPTION_TIERS)
 
 @app.route('/health')
 def health():
@@ -108,21 +154,21 @@ def register():
         # Basic validation
         if not email or not username or not password:
             flash('All fields are required', 'error')
-            return render_template('auth/register.html')
+            return render_template('auth/register.html', subscription_tiers=SUBSCRIPTION_TIERS)
         
         if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
             flash('Invalid email address', 'error')
-            return render_template('auth/register.html')
+            return render_template('auth/register.html', subscription_tiers=SUBSCRIPTION_TIERS)
         
         if len(password) < 6:
             flash('Password must be at least 6 characters', 'error')
-            return render_template('auth/register.html')
+            return render_template('auth/register.html', subscription_tiers=SUBSCRIPTION_TIERS)
         
         # Check if user already exists
         for user in users.values():
             if user.email == email:
                 flash('Email already registered', 'error')
-                return render_template('auth/register.html')
+                return render_template('auth/register.html', subscription_tiers=SUBSCRIPTION_TIERS)
         
         # Create new user
         global user_counter
@@ -136,7 +182,7 @@ def register():
         flash('Registration successful! Please log in.', 'success')
         return redirect(url_for('login'))
     
-    return render_template('auth/register.html')
+    return render_template('auth/register.html', subscription_tiers=SUBSCRIPTION_TIERS)
 
 @app.route('/auth/login', methods=['GET', 'POST'])
 def login():
