@@ -1,42 +1,59 @@
 """
-WSGI entry point that works with Render's forced configuration
+WSGI entry point for CybrScan application
 """
 import os
 import sys
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Add current directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Import our working application
-from simple_app import application as simple_application
-
-def application(environ, start_response):
-    """WSGI application wrapper"""
-    return simple_application(environ, start_response)
-
-# Also provide Flask-style app for `gunicorn wsgi:app`
 try:
-    from simple_app import app
-except ImportError:
-    # Fallback - create a simple Flask app
+    # Import the main CybrScan application
+    from app import app
+    logger.info("✅ Successfully imported CybrScan app")
+    
+    # Expose for gunicorn
+    application = app
+    
+except Exception as e:
+    logger.error(f"❌ Failed to import main app: {e}")
+    logger.info("🔄 Falling back to simple Flask app")
+    
+    # Fallback to a simple working app
     try:
-        from flask import Flask
+        from flask import Flask, jsonify
+        
         app = Flask(__name__)
+        app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback-key')
         
         @app.route('/')
         def index():
-            return "<h1>CybrScan Deployed Successfully!</h1><p>Render.com deployment working.</p>"
-            
+            return """
+            <h1>🚀 CybrScan Loading...</h1>
+            <p>Main application is initializing. If you see this page, the deployment is working.</p>
+            <p><a href="/health">Health Check</a></p>
+            <p><strong>Error:</strong> Main app failed to load - check logs</p>
+            """
+        
         @app.route('/health')
         def health():
-            return {"status": "healthy"}
-    except ImportError:
-        # If Flask is not available, create a dummy app
-        class DummyApp:
-            def __call__(self, environ, start_response):
-                return simple_application(environ, start_response)
+            return jsonify({
+                "status": "partial", 
+                "message": "Fallback app running - main app failed to load",
+                "error": str(e)
+            })
         
-        app = DummyApp()
+        application = app
+        
+    except Exception as fallback_error:
+        logger.error(f"❌ Even fallback failed: {fallback_error}")
+        raise
 
 if __name__ == '__main__':
-    print("WSGI module loaded successfully")
+    if app:
+        app.run(debug=True)
