@@ -20,14 +20,14 @@ try:
     
 except Exception as e:
     logger.error(f"❌ Failed to import main app: {e}")
-    logger.info("🔄 Falling back to minimal app")
+    logger.info("🔄 Falling back to super minimal test app")
     
     try:
-        from app_minimal import app
-        logger.info("✅ Minimal app loaded as fallback")
+        from app_super_minimal import app
+        logger.info("✅ Super minimal test app loaded as fallback")
         application = app
     except Exception as e2:
-        logger.error(f"❌ Even fallback failed: {e2}")
+        logger.error(f"❌ Even super minimal app failed: {e2}")
         raise
     
     # Fallback to a simple working app
