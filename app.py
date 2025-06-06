@@ -69,9 +69,10 @@ except ImportError as e:
 
 # Import our custom modules
 from config import get_config
-from models import db, User, Scanner, Scan, ScannerCustomization, SubscriptionHistory, AdminSettings
-from scanner import SecurityScanner
-from subscription_constants import SUBSCRIPTION_LEVELS, get_subscription_features, get_client_subscription_level
+# Temporarily comment out to isolate config.settings error
+# from models import db, User, Scanner, Scan, ScannerCustomization, SubscriptionHistory, AdminSettings
+# from scanner import SecurityScanner
+# from subscription_constants import SUBSCRIPTION_LEVELS, get_subscription_features, get_client_subscription_level
 
 # Create Flask app
 app = Flask(__name__)
@@ -85,7 +86,7 @@ if not hasattr(app.config, 'DATABASE_URL'):
     app.config['DATABASE_URL'] = 'sqlite:///cybrscan.db'
 
 # Initialize extensions
-db.init_app(app)
+# db.init_app(app)  # Commented out for debugging
 
 # Initialize login manager
 login_manager = LoginManager()
@@ -95,7 +96,8 @@ login_manager.login_message = 'Please log in to access this page.'
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    # return User.query.get(int(user_id))  # Commented out for debugging
+    return None
 
 # Initialize limiter if available
 if Limiter:
@@ -126,12 +128,14 @@ if CORS:
 @app.route('/')
 def index():
     """Landing page"""
-    return render_template('index.html', subscription_levels=SUBSCRIPTION_LEVELS)
+    # return render_template('index.html', subscription_levels=SUBSCRIPTION_LEVELS)  # Commented out for debugging
+    return render_template('index.html', subscription_levels={})
 
 @app.route('/pricing')
 def pricing():
     """Pricing page"""
-    return render_template('pricing.html', subscription_levels=SUBSCRIPTION_LEVELS)
+    # return render_template('pricing.html', subscription_levels=SUBSCRIPTION_LEVELS)  # Commented out for debugging
+    return render_template('pricing.html', subscription_levels={})
 
 @app.route('/dashboard')
 @login_required
@@ -239,7 +243,8 @@ def date_filter(value):
 # Context processors
 @app.context_processor
 def inject_subscription_levels():
-    return dict(subscription_levels=SUBSCRIPTION_LEVELS)
+    # return dict(subscription_levels=SUBSCRIPTION_LEVELS)  # Commented out for debugging
+    return dict(subscription_levels={})
 
 @app.context_processor
 def inject_current_user():
@@ -248,9 +253,10 @@ def inject_current_user():
 # Initialize database
 def init_db():
     """Initialize the database"""
-    with app.app_context():
-        db.create_all()
-        logger.info("Database initialized successfully")
+    # with app.app_context():
+    #     db.create_all()
+    #     logger.info("Database initialized successfully")
+    logger.info("Database initialization skipped for debugging")
 
 if __name__ == '__main__':
     # Initialize database
