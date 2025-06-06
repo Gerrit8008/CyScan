@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade Subscription - Scanner Platform</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon.png.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon.png.png">
+    <link rel="shortcut icon" href="/static/images/favicon.png.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        .sidebar {
+            background-color: #2c3e50;
+            color: white;
+            min-height: 100vh;
+            padding-top: 2rem;
+        }
+        
+        .sidebar-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .sidebar-link i {
+            margin-right: 0.75rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        .plan-card {
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .plan-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        
+        .plan-card.current {
+            border: 2px solid #28a745;
+        }
+        
+        .plan-card.recommended {
+            border: 2px solid #007bff;
+        }
+        
+        .plan-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .plan-period {
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .feature-list li i {
+            margin-right: 0.75rem;
+            width: 20px;
+        }
+        
+        .payment-section {
+            display: none;
+        }
+        
+        .plan-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 10;
+        }
+        
+        .badge-current {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-recommended {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        
+        .plan-popular {
+            position: absolute;
+            top: 20px;
+            right: -35px;
+            background: #ffc107;
+            color: #212529;
+            padding: 5px 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transform: rotate(45deg);
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 p-0 sidebar">
+                <div class="text-center mb-4">
+                    <h4>Scanner Platform</h4>
+                    <p class="mb-0 small">Client Portal</p>
+                </div>
+                
+                <div class="px-3">
+                    <a href="/client/dashboard" class="sidebar-link">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    <a href="/client/scanners" class="sidebar-link">
+                        <i class="bi bi-shield-check"></i> My Scanners
+                    </a>
+                    <a href="/client/statistics" class="sidebar-link">
+                        <i class="bi bi-graph-up"></i> Statistics
+                    </a>
+                    <a href="/client/reports" class="sidebar-link">
+                        <i class="bi bi-file-earmark-text"></i> Scan Reports
+                    </a>
+                    <a href="/client/settings" class="sidebar-link active">
+                        <i class="bi bi-gear"></i> Settings
+                    </a>
+                    
+                    <hr class="my-4">
+                    
+                    <a href="{{ url_for('auth.logout') }}" class="sidebar-link text-danger">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 ms-auto main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2>Upgrade Subscription</h2>
+                        <p class="text-muted">Choose a plan that's right for your needs</p>
+                    </div>
+                    <div>
+                        <span class="badge bg-primary">{{ client.subscription_level|title if client.subscription_level else 'Basic' }}</span>
+                        <span class="ms-2">{{ client.business_name }}</span>
+                    </div>
+                </div>
+                
+                <!-- Current Usage -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-speedometer2 me-2 text-primary"></i>Current Usage
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-muted">Scanners</span>
+                                        <span class="fw-bold">{{ current_scanners }}/{{ scanner_limit }}</span>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar {{ 'bg-warning' if current_scanners >= scanner_limit else 'bg-success' }}" 
+                                             role="progressbar" 
+                                             style="width: {{ (current_scanners / scanner_limit * 100) if scanner_limit > 0 else 0 }}%">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="text-muted">Scans Used (This Month)</span>
+                                        <span class="fw-bold">{{ scans_used }}/{{ scans_limit }}</span>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar {{ 'bg-warning' if scans_used >= scans_limit else 'bg-success' }}" 
+                                             role="progressbar" 
+                                             style="width: {{ (scans_used / scans_limit * 100) if scans_limit > 0 else 0 }}%">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <!-- Scanner Created Notification -->
+                {% if scanner_created %}
+                <div class="text-center my-5">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">Ready to test your scanner?</h5>
+                            <p class="card-text">You can upgrade now for more features, or try your scanner first with the current plan.</p>
+                            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                                <a href="/scanner/{{ scanner_created }}/embed" class="btn btn-success btn-lg">
+                                    <i class="bi bi-play-circle me-2"></i>View My Scanner
+                                </a>
+                                <a href="/client/dashboard" class="btn btn-outline-secondary btn-lg">
+                                    <i class="bi bi-skip-end me-2"></i>Skip for Now
+                                </a>
+                            </div>
+                            <small class="text-muted d-block mt-2">You can upgrade anytime from your dashboard</small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Subscription Plans -->
+                <div class="row g-4">
+                    <!-- Basic Plan -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card plan-card h-100 {{ 'current' if client.subscription_level == 'basic' or not client.subscription_level }}">
+                            {% if client.subscription_level == 'basic' or not client.subscription_level %}
+                            <span class="plan-badge badge-current">Current Plan</span>
+                            {% endif %}
+                            <div class="card-header text-center">
+                                <h5>Basic</h5>
+                                <div class="plan-price">Free<span class="plan-period">/forever</span></div>
+                                <p class="text-muted small">Perfect for trying out our platform</p>
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <ul class="feature-list">
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>1 scanner</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>10 scans per month</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Basic branding</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Email reports</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Community support</li>
+                                    <li><i class="bi bi-x-circle-fill text-muted"></i><span class="text-muted">No API access</span></li>
+                                    <li><i class="bi bi-x-circle-fill text-muted"></i><span class="text-muted">No client portal</span></li>
+                                </ul>
+                                <div class="mt-auto text-center">
+                                    {% if client.subscription_level == 'basic' or not client.subscription_level %}
+                                    <button class="btn btn-outline-success w-100" disabled>Current Plan</button>
+                                    {% else %}
+                                    <form method="post" action="/client/process-downgrade">
+                                        <input type="hidden" name="plan" value="basic">
+                                        <button type="submit" class="btn btn-outline-secondary w-100">Downgrade</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Starter Plan -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card plan-card h-100 {{ 'current' if client.subscription_level == 'starter' }}">
+                            {% if client.subscription_level == 'starter' %}
+                            <span class="plan-badge badge-current">Current Plan</span>
+                            {% endif %}
+                            <div class="card-header text-center">
+                                <h5>Starter</h5>
+                                <div class="plan-price">$59<span class="plan-period">/month</span></div>
+                                <p class="text-muted small">Perfect for small MSPs getting started</p>
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <ul class="feature-list">
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>1 scanner</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>50 scans per month</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>White-label branding</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Basic reporting</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Email support</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Client portal</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Basic integrations</li>
+                                </ul>
+                                <div class="mt-auto text-center">
+                                    {% if client.subscription_level == 'starter' %}
+                                    <button class="btn btn-outline-success w-100" disabled>Current Plan</button>
+                                    {% elif client.subscription_level == 'professional' or client.subscription_level == 'enterprise' %}
+                                    <form method="post" action="/client/process-downgrade">
+                                        <input type="hidden" name="plan" value="starter">
+                                        <button type="submit" class="btn btn-outline-secondary w-100">Downgrade</button>
+                                    </form>
+                                    {% else %}
+                                    <form method="post" action="/client/process-upgrade">
+                                        <input type="hidden" name="plan" value="starter">
+                                        <button type="submit" class="btn btn-primary w-100">Upgrade Now</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Professional Plan -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card plan-card h-100 {{ 'current' if client.subscription_level == 'professional' else 'recommended' if client.subscription_level == 'basic' or client.subscription_level == 'starter' or not client.subscription_level }}">
+                            {% if client.subscription_level == 'professional' %}
+                            <span class="plan-badge badge-current">Current Plan</span>
+                            {% elif client.subscription_level == 'basic' or client.subscription_level == 'starter' or not client.subscription_level %}
+                            <span class="plan-badge badge-recommended">Recommended</span>
+                            {% endif %}
+                            <div class="plan-popular">Most Popular</div>
+                            <div class="card-header text-center bg-primary text-white">
+                                <h5>Professional</h5>
+                                <div class="plan-price text-white">$99<span class="plan-period">/month</span></div>
+                                <p class="text-white-50 small">Ideal for growing MSPs</p>
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <ul class="feature-list">
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>3 scanners</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>500 scans per month</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Advanced white-labeling</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Professional reporting</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Priority phone support</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Advanced client portal</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>API access</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Custom integrations</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Scheduled scanning</li>
+                                </ul>
+                                <div class="mt-auto text-center">
+                                    {% if client.subscription_level == 'professional' %}
+                                    <button class="btn btn-outline-success w-100" disabled>Current Plan</button>
+                                    {% elif client.subscription_level == 'enterprise' %}
+                                    <form method="post" action="/client/process-downgrade">
+                                        <input type="hidden" name="plan" value="professional">
+                                        <button type="submit" class="btn btn-outline-secondary w-100">Downgrade</button>
+                                    </form>
+                                    {% else %}
+                                    <form method="post" action="/client/process-upgrade">
+                                        <input type="hidden" name="plan" value="professional">
+                                        <button type="submit" class="btn btn-light w-100">Start Free Trial</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Enterprise Plan -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card plan-card h-100 {{ 'current' if client.subscription_level == 'enterprise' }}">
+                            {% if client.subscription_level == 'enterprise' %}
+                            <span class="plan-badge badge-current">Current Plan</span>
+                            {% endif %}
+                            <div class="card-header text-center">
+                                <h5>Enterprise</h5>
+                                <div class="plan-price">$149<span class="plan-period">/month</span></div>
+                                <p class="text-muted small">For large MSPs and enterprises</p>
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <ul class="feature-list">
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>10 scanners</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>1000 scans per month</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Complete white-labeling</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Executive reporting</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>24/7 dedicated support</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Multi-tenant management</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Full API access</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Custom development</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>SLA guarantees</li>
+                                    <li><i class="bi bi-check-circle-fill text-success"></i>Training & onboarding</li>
+                                </ul>
+                                <div class="mt-auto text-center">
+                                    {% if client.subscription_level == 'enterprise' %}
+                                    <button class="btn btn-outline-success w-100" disabled>Current Plan</button>
+                                    {% else %}
+                                    <form method="post" action="/client/process-upgrade">
+                                        <input type="hidden" name="plan" value="enterprise">
+                                        <button type="submit" class="btn btn-primary w-100">Contact Sales</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payment Section (hidden by default, shown when selecting a paid plan) -->
+                <div class="payment-section mt-5">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">Payment Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="paymentForm" method="post" action="/client/process-payment">
+                                <input type="hidden" id="selectedPlan" name="plan" value="">
+                                
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <h6 class="mb-3">Billing Information</h6>
+                                        <div class="row g-3 mb-4">
+                                            <div class="col-md-6">
+                                                <label for="cardName" class="form-label">Name on Card</label>
+                                                <input type="text" class="form-control" id="cardName" name="card_name" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="cardNumber" class="form-label">Card Number</label>
+                                                <input type="text" class="form-control" id="cardNumber" name="card_number" required
+                                                       placeholder="•••• •••• •••• ••••">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="expiryMonth" class="form-label">Expiry Month</label>
+                                                <select class="form-select" id="expiryMonth" name="expiry_month" required>
+                                                    <option value="">Month</option>
+                                                    {% for i in range(1, 13) %}
+                                                    <option value="{{ '%02d' % i }}">{{ '%02d' % i }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="expiryYear" class="form-label">Expiry Year</label>
+                                                <select class="form-select" id="expiryYear" name="expiry_year" required>
+                                                    <option value="">Year</option>
+                                                    {% for i in range(2023, 2035) %}
+                                                    <option value="{{ i }}">{{ i }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="cvv" class="form-label">CVV</label>
+                                                <input type="text" class="form-control" id="cvv" name="cvv" required
+                                                       placeholder="•••">
+                                            </div>
+                                        </div>
+                                        
+                                        <h6 class="mb-3">Billing Address</h6>
+                                        <div class="row g-3">
+                                            <div class="col-12">
+                                                <label for="address" class="form-label">Address</label>
+                                                <input type="text" class="form-control" id="address" name="address" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="city" class="form-label">City</label>
+                                                <input type="text" class="form-control" id="city" name="city" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="state" class="form-label">State</label>
+                                                <input type="text" class="form-control" id="state" name="state" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="zip" class="form-label">ZIP Code</label>
+                                                <input type="text" class="form-control" id="zip" name="zip" required>
+                                            </div>
+                                            <div class="col-12">
+                                                <label for="country" class="form-label">Country</label>
+                                                <select class="form-select" id="country" name="country" required>
+                                                    <option value="">Select Country</option>
+                                                    <option value="US">United States</option>
+                                                    <option value="CA">Canada</option>
+                                                    <option value="UK">United Kingdom</option>
+                                                    <option value="AU">Australia</option>
+                                                    <!-- Add more countries as needed -->
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <h6 class="mb-3">Order Summary</h6>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span>Plan:</span>
+                                                    <span id="summaryPlanName">Professional</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span>Price:</span>
+                                                    <span id="summaryPrice">$99.00</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <span>Billing Period:</span>
+                                                    <span>Monthly</span>
+                                                </div>
+                                                <hr>
+                                                <div class="d-flex justify-content-between mb-2 fw-bold">
+                                                    <span>Total:</span>
+                                                    <span id="summaryTotal">$99.00</span>
+                                                </div>
+                                                
+                                                <div class="form-check mt-4">
+                                                    <input class="form-check-input" type="checkbox" id="termsCheck" name="terms_accepted" required>
+                                                    <label class="form-check-label" for="termsCheck">
+                                                        I agree to the <a href="/terms" target="_blank">Terms of Service</a>
+                                                    </label>
+                                                </div>
+                                                
+                                                <div class="mt-4">
+                                                    <button type="submit" class="btn btn-success w-100 mb-2">
+                                                        <i class="bi bi-lock-fill me-2"></i>Complete Payment
+                                                    </button>
+                                                    <button type="button" id="cancelPayment" class="btn btn-outline-secondary w-100">
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                                
+                                                <div class="mt-3 text-center">
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-shield-lock me-1"></i>
+                                                        Your payment information is encrypted and secure
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- FAQ Section -->
+                <div class="mt-5">
+                    <h3>Frequently Asked Questions</h3>
+                    <div class="accordion" id="subscriptionFAQ">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                    How do billing cycles work?
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#subscriptionFAQ">
+                                <div class="accordion-body">
+                                    Billing cycles are monthly and begin on the date you subscribe. You'll be billed automatically each month on the same date. You can upgrade or downgrade your plan at any time, and the changes will take effect immediately.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    Can I cancel my subscription?
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#subscriptionFAQ">
+                                <div class="accordion-body">
+                                    Yes, you can cancel your subscription at any time. If you cancel, your subscription will remain active until the end of the current billing cycle. After that, your account will be downgraded to the Basic plan with limited features.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingThree">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    What happens if I exceed my plan limits?
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#subscriptionFAQ">
+                                <div class="accordion-body">
+                                    If you reach your scanner limit, you won't be able to create new scanners until you upgrade your plan or delete existing scanners. If you reach your scan limit, scanning functionality will be paused until the next billing cycle or until you upgrade to a higher tier plan.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingFour">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                    Do you offer annual subscriptions?
+                                </button>
+                            </h2>
+                            <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#subscriptionFAQ">
+                                <div class="accordion-body">
+                                    Yes, we offer annual subscriptions with a 15% discount compared to monthly billing. Please contact our sales team for more information on annual plans and custom enterprise solutions.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            // Handle upgrade buttons
+            const upgradeButtons = document.querySelectorAll('form[action="/client/process-upgrade"] button');
+            const paymentSection = document.querySelector('.payment-section');
+            const selectedPlanInput = document.getElementById('selectedPlan');
+            const summaryPlanName = document.getElementById('summaryPlanName');
+            const summaryPrice = document.getElementById('summaryPrice');
+            const summaryTotal = document.getElementById('summaryTotal');
+            const cancelPaymentBtn = document.getElementById('cancelPayment');
+            
+            // Plan pricing information
+            const planPrices = {
+                'starter': { name: 'Starter', price: '$59.00' },
+                'professional': { name: 'Professional', price: '$99.00' },
+                'enterprise': { name: 'Enterprise', price: '$149.00' }
+            };
+            
+            // Show payment section when clicking upgrade
+            upgradeButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const form = this.closest('form');
+                    const plan = form.querySelector('input[name="plan"]').value;
+                    
+                    // Don't show payment for enterprise plan (contact sales instead)
+                    if (plan === 'enterprise') {
+                        window.location.href = '/contact?plan=enterprise';
+                        return;
+                    }
+                    
+                    // Update selected plan in payment form
+                    selectedPlanInput.value = plan;
+                    
+                    // Update order summary
+                    summaryPlanName.textContent = planPrices[plan].name;
+                    summaryPrice.textContent = planPrices[plan].price;
+                    summaryTotal.textContent = planPrices[plan].price;
+                    
+                    // Show payment section and scroll to it
+                    paymentSection.style.display = 'block';
+                    paymentSection.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+            
+            // Hide payment section when clicking cancel
+            cancelPaymentBtn.addEventListener('click', function() {
+                paymentSection.style.display = 'none';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            
+            // For development/testing - prefill with test data
+            const testDataButton = document.createElement('button');
+            testDataButton.type = 'button';
+            testDataButton.className = 'btn btn-sm btn-outline-secondary mt-2';
+            testDataButton.textContent = 'Fill with test data';
+            testDataButton.addEventListener('click', function() {
+                document.getElementById('cardName').value = 'John Doe';
+                document.getElementById('cardNumber').value = '4242 4242 4242 4242';
+                document.getElementById('expiryMonth').value = '12';
+                document.getElementById('expiryYear').value = '2025';
+                document.getElementById('cvv').value = '123';
+                document.getElementById('address').value = '123 Main St';
+                document.getElementById('city').value = 'Anytown';
+                document.getElementById('state').value = 'CA';
+                document.getElementById('zip').value = '12345';
+                document.getElementById('country').value = 'US';
+                document.getElementById('termsCheck').checked = true;
+            });
+            
+            // Only add test button in development environments
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                document.querySelector('.payment-section .card-body form').appendChild(testDataButton);
+            }
+        });
+    </script>
+</body>
+</html>

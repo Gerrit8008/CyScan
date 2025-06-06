@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CybrScann - Advanced Cybersecurity Scanning Platform</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon.png.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon.png.png">
+    <link rel="shortcut icon" href="/static/images/favicon.png.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a237e;
+            --secondary-color: #d96c33;
+            --accent-green: #76ff03;
+            --primary-dark: #0d1669;
+            --text-light: #f8f9fa;
+            --text-muted: #6c757d;
+            --gradient-1: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            --gradient-2: linear-gradient(135deg, #d96c33 0%, #c55a2b 100%);
+            --gradient-green: linear-gradient(135deg, #76ff03 0%, #64dd17 100%);
+            --shadow-lg: 0 10px 30px rgba(26, 35, 126, 0.15);
+            --shadow-xl: 0 20px 60px rgba(26, 35, 126, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: white;
+            backdrop-filter: blur(10px);
+            padding: 0.75rem 0;
+            transition: all 0.3s ease;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color) !important;
+            text-decoration: none;
+        }
+
+        .navbar-logo {
+            height: 45px;
+            width: auto;
+            max-width: 200px;
+            object-fit: contain;
+            object-position: left center;
+            margin: 5px 0;
+        }
+
+        .footer-logo {
+            height: 35px;
+            width: auto;
+            max-width: 120px;
+            object-fit: contain;
+            filter: brightness(0) invert(1); /* Make logo white for dark footer */
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--primary-color) !important;
+            font-weight: 500;
+            margin: 0 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--secondary-color) !important;
+        }
+
+        .btn-outline-light {
+            border-color: var(--secondary-color);
+            color: var(--secondary-color);
+        }
+
+        .btn-outline-light:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: white;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: var(--gradient-1);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+            opacity: 0.5;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            color: var(--text-light);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero .lead {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: var(--gradient-2);
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+            background: var(--gradient-2);
+        }
+
+        .btn-outline-secondary {
+            border: 2px solid var(--secondary-color);
+            color: var(--secondary-color);
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-secondary:hover {
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 6rem 0;
+            background: #f8f9fa;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            border: none;
+            height: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .feature-icon i {
+            font-size: 2rem;
+            color: var(--text-light);
+        }
+
+        .feature-card h3 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* Stats Section */
+        .stats {
+            background: var(--gradient-1);
+            padding: 4rem 0;
+            color: var(--text-light);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--accent-green);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Login Section */
+        .login-section {
+            padding: 6rem 0;
+            background: white;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .login-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .login-icon {
+            width: 100px;
+            height: 100px;
+            background: var(--gradient-1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+        }
+
+        .login-icon i {
+            font-size: 2.5rem;
+            color: var(--text-light);
+        }
+
+        .admin-card .login-icon {
+            background: var(--gradient-2);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--primary-color);
+            color: var(--text-light);
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            opacity: 1;
+            color: var(--secondary-color);
+        }
+
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide-in-left {
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: all 0.8s ease;
+        }
+
+        .slide-in-left.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-in-right {
+            opacity: 0;
+            transform: translateX(50px);
+            transition: all 0.8s ease;
+        }
+
+        .slide-in-right.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero .lead {
+                font-size: 1.1rem;
+            }
+            
+            .cta-buttons {
+                justify-content: center;
+            }
+            
+            .feature-card {
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .navbar-brand {
+                font-size: 1.5rem;
+            }
+
+            .navbar-logo {
+                height: 40px;
+                max-width: 160px;
+            }
+
+            .footer-logo {
+                height: 30px;
+                max-width: 100px;
+            }
+        }
+
+        /* Security Badge */
+        .security-badge {
+            position: absolute;
+            top: 20%;
+            right: -10%;
+            width: 200px;
+            height: 200px;
+            background: rgba(118, 255, 3, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .security-badge i {
+            font-size: 4rem;
+            color: var(--accent-green);
+            opacity: 0.4;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        /* Crisis Section Styles */
+        .crisis-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: white;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .crisis-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            color: white;
+        }
+
+        .crisis-stat {
+            padding: 1rem;
+        }
+
+        /* Threat Card Styles */
+        .threat-card {
+            transition: all 0.3s ease;
+        }
+
+        .threat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="/static/images/logo.png" alt="CybrScann Logo" class="navbar-logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/pricing">Pricing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#login">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/scan">Try Demo</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-light px-3" href="/auth/register">Register Here</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="security-badge">
+            <i class="bi bi-shield-lock"></i>
+        </div>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="hero-content slide-in-left">
+                        <h1>White-Label Security Solutions<br><span style="color: var(--accent-green);">For MSPs</span></h1>
+                        <p class="lead">Expand your service portfolio with CybrScan's comprehensive security scanning platform. Offer branded cybersecurity assessments to your clients with our turnkey MSP solution.</p>
+                        <div class="cta-buttons">
+                            <a href="/auth/register" class="btn btn-primary">
+                                <i class="bi bi-person-plus me-2"></i>Register Here
+                            </a>
+                            <a href="/pricing" class="btn btn-outline-secondary">
+                                <i class="bi bi-tag me-2"></i>View Pricing
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="text-center slide-in-right">
+                        <div style="font-size: 15rem; color: rgba(97, 198, 8, 0.1); line-height: 1;">
+                            <i class="bi bi-shield-shaded"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3 col-6">
+                    <div class="stat-item fade-in">
+                        <span class="stat-number">150+</span>
+                        <div class="stat-label">MSP Partners</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-item fade-in">
+                        <span class="stat-number">2,500+</span>
+                        <div class="stat-label">End Clients Served</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-item fade-in">
+                        <span class="stat-number">40%</span>
+                        <div class="stat-label">Average Revenue Increase</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-item fade-in">
+                        <span class="stat-number">24/7</span>
+                        <div class="stat-label">Partner Support</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="display-5 fw-bold mb-4 fade-in" style="color: var(--primary-color);">Complete MSP Solution</h2>
+                    <p class="lead text-muted fade-in">Everything your MSP needs to offer comprehensive security services under your brand. White-label platform, customizable reports, and seamless client integration.</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-search"></i>
+                        </div>
+                        <h3>White-Label Branding</h3>
+                        <p class="text-muted">Complete customization with your logo, colors, and messaging. Your clients see your brand throughout the entire security assessment experience.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-globe"></i>
+                        </div>
+                        <h3>Comprehensive Scanning</h3>
+                        <p class="text-muted">Network, web, email, and infrastructure security assessments. Everything your clients need in one comprehensive platform.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-envelope-check"></i>
+                        </div>
+                        <h3>Automated Reporting</h3>
+                        <p class="text-muted">Professional, branded reports automatically generated and delivered to your clients via email with your custom messaging.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <h3>Revenue Growth</h3>
+                        <p class="text-muted">Turn security assessments into recurring revenue. Our partners see an average 40% increase in monthly revenue within 6 months.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-file-earmark-text"></i>
+                        </div>
+                        <h3>Client Portal</h3>
+                        <p class="text-muted">Dedicated client dashboard where your customers can access their security reports, track improvements, and request new scans.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h3>Partner Support</h3>
+                        <p class="text-muted">Dedicated MSP support team, onboarding assistance, marketing materials, and ongoing technical support to ensure your success.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cybersecurity Crisis Section -->
+    <section class="crisis-section" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); padding: 6rem 0; color: white;">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-10 mx-auto text-center">
+                    <h2 class="display-4 fw-bold mb-4 fade-in">The Cybersecurity Crisis Is Real</h2>
+                    <p class="lead fade-in">Your clients are under constant threat. Help them defend their businesses with comprehensive security assessments.</p>
+                </div>
+            </div>
+            
+            <!-- Critical Stats -->
+            <div class="row mb-5">
+                <div class="col-md-3 col-6 text-center mb-4">
+                    <div class="crisis-stat fade-in">
+                        <div class="crisis-number">$4.45M</div>
+                        <div class="crisis-label">Average breach cost</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 text-center mb-4">
+                    <div class="crisis-stat fade-in">
+                        <div class="crisis-number">277 Days</div>
+                        <div class="crisis-label">To identify breach</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 text-center mb-4">
+                    <div class="crisis-stat fade-in">
+                        <div class="crisis-number">43%</div>
+                        <div class="crisis-label">Target small business</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 text-center mb-4">
+                    <div class="crisis-stat fade-in">
+                        <div class="crisis-number">60%</div>
+                        <div class="crisis-label">Close after attack</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- The Stakes -->
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="stakes-card fade-in" style="background: rgba(255,255,255,0.1); border-radius: 20px; padding: 2rem; backdrop-filter: blur(10px);">
+                        <h4 class="mb-3"><i class="bi bi-graph-down me-2"></i>The Cost of Being Vulnerable</h4>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-exclamation-triangle text-warning me-2"></i>91% of cyber attacks start with phishing emails</li>
+                            <li class="mb-2"><i class="bi bi-exclamation-triangle text-warning me-2"></i>74% of breaches exploit network vulnerabilities</li>
+                            <li class="mb-2"><i class="bi bi-exclamation-triangle text-warning me-2"></i>60% involve unpatched systems</li>
+                            <li class="mb-2"><i class="bi bi-exclamation-triangle text-warning me-2"></i>$5,600 per minute in downtime costs</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="stakes-card fade-in" style="background: rgba(118, 255, 3, 0.2); border-radius: 20px; padding: 2rem; backdrop-filter: blur(10px);">
+                        <h4 class="mb-3"><i class="bi bi-shield-check me-2"></i>Your MSP Opportunity</h4>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>80% of breaches are preventable with proper assessment</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>95% cost savings with early vulnerability detection</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>20-40% savings on cyber insurance premiums</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>47% increase in customer trust</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- What We Scan Section -->
+    <section style="background: #f8f9fa; padding: 6rem 0;">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-10 mx-auto text-center">
+                    <h2 class="display-5 fw-bold mb-4 fade-in" style="color: var(--primary-color);">Comprehensive Security Assessment Platform</h2>
+                    <p class="lead text-muted fade-in">Your clients get enterprise-level security scanning across all critical vulnerability areas</p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <!-- Network Security -->
+                <div class="col-lg-6 mb-4">
+                    <div class="threat-card fade-in" style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); height: 100%;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #dc3545, #c82333); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+                                    <i class="bi bi-hdd-network text-white" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <h4 style="color: var(--primary-color); margin: 0;">Network Security</h4>
+                            </div>
+                            <span class="badge bg-danger">74% of breaches</span>
+                        </div>
+                        <p class="text-muted mb-3">Network vulnerabilities are hackers' favorite entry point. We find them before they do.</p>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i><strong>Open Port Detection</strong> - Each exposed port increases risk by 23%</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i><strong>Gateway Analysis</strong> - 85% of breaches involve lateral movement</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i><strong>Firewall Assessment</strong> - Proper config reduces risk by 60%</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Web Security -->
+                <div class="col-lg-6 mb-4">
+                    <div class="threat-card fade-in" style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); height: 100%;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #fd7e14, #e66b00); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+                                    <i class="bi bi-globe text-white" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <h4 style="color: var(--primary-color); margin: 0;">Web Security</h4>
+                            </div>
+                            <span class="badge bg-danger">39% of attacks</span>
+                        </div>
+                        <p class="text-muted mb-3">Web applications are under constant attack. We check every critical vulnerability.</p>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i><strong>SSL/TLS Analysis</strong> - 67% have weak certificates</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i><strong>Security Headers</strong> - Only 15% properly implemented</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i><strong>CMS Vulnerabilities</strong> - 90% of WordPress sites at risk</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Email Security -->
+                <div class="col-lg-6 mb-4">
+                    <div class="threat-card fade-in" style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); height: 100%;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #6f42c1, #5a2d91); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+                                    <i class="bi bi-envelope text-white" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <h4 style="color: var(--primary-color); margin: 0;">Email Security</h4>
+                            </div>
+                            <span class="badge bg-danger">91% phishing</span>
+                        </div>
+                        <p class="text-muted mb-3">Email is the #1 attack vector. We ensure your clients' domains are protected.</p>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i><strong>SPF Records</strong> - 87% of companies lack proper setup</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i><strong>DKIM Signing</strong> - Only 45% properly implemented</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i><strong>DMARC Policy</strong> - Reduces phishing by 90%</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- System Security -->
+                <div class="col-lg-6 mb-4">
+                    <div class="threat-card fade-in" style="background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); height: 100%;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #198754, #146c43); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
+                                    <i class="bi bi-shield-lock text-white" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <h4 style="color: var(--primary-color); margin: 0;">System Security</h4>
+                            </div>
+                            <span class="badge bg-danger">60% unpatched</span>
+                        </div>
+                        <p class="text-muted mb-3">System vulnerabilities are sitting ducks for attackers. We find critical gaps.</p>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i><strong>Patch Management</strong> - 86% of vulnerabilities have patches available</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i><strong>Firewall Status</strong> - Blocks 75% of attack attempts</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i><strong>Security Policies</strong> - Misconfiguration causes 23% of breaches</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ROI Section -->
+            <div class="row mt-5">
+                <div class="col-lg-10 mx-auto">
+                    <div class="roi-card fade-in" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; border-radius: 20px; padding: 3rem; text-align: center;">
+                        <h3 class="mb-4">The Smart Investment for Your Clients</h3>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div style="background: rgba(255,255,255,0.2); border-radius: 15px; padding: 1.5rem;">
+                                    <div style="font-size: 2.5rem; font-weight: bold; color: var(--accent-green);">0.1%</div>
+                                    <div>Security assessment cost vs. breach cost</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div style="background: rgba(255,255,255,0.2); border-radius: 15px; padding: 1.5rem;">
+                                    <div style="font-size: 2.5rem; font-weight: bold; color: var(--accent-green);">95%</div>
+                                    <div>Cost savings with early detection</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div style="background: rgba(255,255,255,0.2); border-radius: 15px; padding: 1.5rem;">
+                                    <div style="font-size: 2.5rem; font-weight: bold; color: var(--accent-green);">100x</div>
+                                    <div>ROI on prevention vs. recovery</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Section -->
+    <section class="login-section" id="login">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="display-5 fw-bold mb-4 fade-in" style="color: var(--primary-color);">Ready to Get Started?</h2>
+                    <p class="lead text-muted fade-in">Join hundreds of MSPs already growing their revenue with CybrScan's white-label security platform</p>
+                </div>
+            </div>
+            <div class="row g-4 justify-content-center">
+                <div class="col-lg-6 col-md-8">
+                    <div class="login-card fade-in text-center">
+                        <div class="login-icon mx-auto">
+                            <i class="bi bi-person-plus"></i>
+                        </div>
+                        <h3 style="color: var(--primary-color);">Register Your MSP</h3>
+                        <p class="text-muted mb-4">Start offering white-label security services to your clients today. Setup takes less than 5 minutes.</p>
+                        <a href="/auth/register" class="btn btn-primary btn-lg w-100 mb-3">
+                            <i class="bi bi-person-plus me-2"></i>Register Here
+                        </a>
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <a href="/auth/login?type=client" class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-person-circle me-2"></i>Client Portal Login
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="col-lg-8 mx-auto text-center fade-in">
+                    <h4 style="color: var(--primary-color);">See It In Action</h4>
+                    <p class="text-muted mb-4">Experience a live demo of our security scanning platform - no registration required.</p>
+                    <a href="/scan" class="btn btn-outline-secondary btn-lg">
+                        <i class="bi bi-play-circle me-2"></i>Try Demo Scan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="/static/images/logo.png" alt="CybrScann Logo" class="footer-logo me-2">
+                        <h5 class="mb-0">CybrScann</h5>
+                    </div>
+                    <p class="text-light opacity-75">Advanced cybersecurity scanning platform protecting businesses worldwide with comprehensive vulnerability assessment and threat detection.</p>
+                </div>
+                <div class="col-lg-2 col-md-3 mb-4">
+                    <h6>Platform</h6>
+                    <div class="footer-links">
+                        <div><a href="/scan">Free Scan</a></div>
+                        <div><a href="#features">Features</a></div>
+                        <div><a href="/auth/register">Sign Up</a></div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 mb-4">
+                    <h6>Support</h6>
+                    <div class="footer-links">
+                        <div><a href="/docs">Documentation</a></div>
+                        <div><a href="/contact">Contact</a></div>
+                        <div><a href="/help">Help Center</a></div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 mb-4">
+                    <h6>Company</h6>
+                    <div class="footer-links">
+                        <div><a href="/about">About</a></div>
+                        <div><a href="/privacy">Privacy</a></div>
+                        <div><a href="/terms">Terms</a></div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 mb-4">
+                    <h6>Connect</h6>
+                    <div class="footer-links">
+                        <div><a href="#"><i class="bi bi-linkedin me-2"></i>LinkedIn</a></div>
+                        <div><a href="#"><i class="bi bi-twitter me-2"></i>Twitter</a></div>
+                        <div><a href="#"><i class="bi bi-github me-2"></i>GitHub</a></div>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4 opacity-25">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 opacity-75">&copy; 2025 CybrScann. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 opacity-75">Powered by Advanced Security Technology</p>
+                    <small class="opacity-50"><a href="/auth/login?type=admin" style="color: inherit; text-decoration: none;">Admin</a></small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all animation elements
+        document.addEventListener('DOMContentLoaded', () => {
+            const animatedElements = document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right');
+            animatedElements.forEach(el => observer.observe(el));
+
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Navbar background on scroll
+            window.addEventListener('scroll', () => {
+                const navbar = document.querySelector('.navbar');
+                if (window.scrollY > 50) {
+                    navbar.style.background = 'rgba(255, 255, 255, 0.98)';
+                    navbar.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)';
+                } else {
+                    navbar.style.background = 'white';
+                    navbar.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

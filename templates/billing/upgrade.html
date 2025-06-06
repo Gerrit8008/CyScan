@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Upgrade Subscription - CybrScan{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-credit-card mr-2"></i>
+                        Upgrade Your Subscription
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4>Current Plan: {{ current_subscription.title() }}</h4>
+                            <p class="text-muted mb-4">Upgrade to unlock more features and grow your MSP business</p>
+                            
+                            <div class="row">
+                                {% for level, details in subscription_levels.items() %}
+                                    {% if level != 'basic' and level != current_subscription %}
+                                    <div class="col-md-4 mb-4">
+                                        <div class="card h-100 {% if details.get('popular') %}border-primary{% endif %}">
+                                            {% if details.get('popular') %}
+                                            <div class="card-header bg-primary text-white text-center">
+                                                <i class="fas fa-star"></i> Most Popular
+                                            </div>
+                                            {% endif %}
+                                            <div class="card-body text-center">
+                                                <h5 class="card-title">{{ details.name }}</h5>
+                                                <h3 class="text-primary">${{ "%.2f"|format(details.price) }}</h3>
+                                                <p class="text-muted">per {{ details.period }}</p>
+                                                <p class="card-text">{{ details.description }}</p>
+                                                
+                                                <ul class="list-unstyled text-left mt-3">
+                                                    <li><i class="fas fa-check text-success"></i> {{ details.features.scanners }} Scanner(s)</li>
+                                                    <li><i class="fas fa-check text-success"></i> {{ details.features.scans_per_month }} Scans/month</li>
+                                                    {% if details.features.white_label %}
+                                                    <li><i class="fas fa-check text-success"></i> White-label branding</li>
+                                                    {% endif %}
+                                                    {% if details.features.api_access %}
+                                                    <li><i class="fas fa-check text-success"></i> API access</li>
+                                                    {% endif %}
+                                                    {% if details.features.client_portal %}
+                                                    <li><i class="fas fa-check text-success"></i> Client portal</li>
+                                                    {% endif %}
+                                                    {% if details.features.get('scheduled_scanning') %}
+                                                    <li><i class="fas fa-check text-success"></i> Scheduled scanning</li>
+                                                    {% endif %}
+                                                </ul>
+                                            </div>
+                                            <div class="card-footer">
+                                                <button class="btn btn-primary btn-block upgrade-btn" 
+                                                        data-level="{{ level }}">
+                                                    Upgrade Now
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card bg-light">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-chart-line"></i> MSP Revenue Calculator</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="clients-per-month">Clients per month:</label>
+                                        <input type="number" id="clients-per-month" class="form-control" value="10" min="1" max="1000">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="subscription-select">Subscription level:</label>
+                                        <select id="subscription-select" class="form-control">
+                                            {% for level, details in subscription_levels.items() %}
+                                                {% if level != 'basic' %}
+                                                <option value="{{ level }}">{{ details.name }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    
+                                    <button id="calculate-revenue" class="btn btn-info btn-block">
+                                        Calculate Revenue
+                                    </button>
+                                    
+                                    <div id="revenue-results" style="display: none;" class="mt-3">
+                                        <div class="alert alert-info">
+                                            <strong>Monthly Revenue Potential:</strong>
+                                            <div id="revenue-breakdown"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h6><i class="fas fa-info-circle"></i> Benefits of Upgrading</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-rocket text-primary"></i> Grow your MSP business</li>
+                                        <li><i class="fas fa-users text-primary"></i> Serve more clients</li>
+                                        <li><i class="fas fa-dollar-sign text-primary"></i> Increase recurring revenue</li>
+                                        <li><i class="fas fa-shield-alt text-primary"></i> Offer premium security services</li>
+                                        <li><i class="fas fa-support text-primary"></i> Priority support</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stripe -->
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+$(document).ready(function() {
+    // Handle upgrade button clicks
+    $('.upgrade-btn').click(function() {
+        const level = $(this).data('level');
+        const button = $(this);
+        
+        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+        
+        $.ajax({
+            url: '{{ url_for("billing.create_checkout_session") }}',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({subscription_level: level}),
+            success: function(response) {
+                window.location.href = response.checkout_url;
+            },
+            error: function(xhr) {
+                button.prop('disabled', false).html('Upgrade Now');
+                const error = xhr.responseJSON?.error || 'Failed to create checkout session';
+                alert('Error: ' + error);
+            }
+        });
+    });
+    
+    // Handle revenue calculator
+    $('#calculate-revenue').click(function() {
+        const clientsPerMonth = $('#clients-per-month').val();
+        const subscriptionLevel = $('#subscription-select').val();
+        
+        $.ajax({
+            url: '{{ url_for("billing.revenue_calculator") }}',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                clients_per_month: parseInt(clientsPerMonth),
+                subscription_level: subscriptionLevel
+            }),
+            success: function(data) {
+                const breakdown = `
+                    <div class="small">
+                        <div>Monthly Cost: $${data.monthly_cost.toFixed(2)}</div>
+                        <div>Potential Revenue: $${data.monthly_revenue.toFixed(2)}</div>
+                        <div><strong>Net Profit: $${data.monthly_profit.toFixed(2)}</strong></div>
+                        <div>Annual Profit: $${data.annual_profit.toFixed(2)}</div>
+                        <div>ROI: ${data.roi_percentage.toFixed(1)}%</div>
+                    </div>
+                `;
+                $('#revenue-breakdown').html(breakdown);
+                $('#revenue-results').show();
+            },
+            error: function() {
+                alert('Error calculating revenue');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

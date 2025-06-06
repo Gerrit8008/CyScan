@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Scanner - {{ scanner.name }}</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon.png.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon.png.png">
+    <link rel="shortcut icon" href="/static/images/favicon.png.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        .sidebar {
+            background-color: #2c3e50;
+            color: white;
+            min-height: 100vh;
+            padding-top: 2rem;
+        }
+        
+        .sidebar-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .sidebar-link i {
+            margin-right: 0.75rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 px-0">
+                <div class="sidebar">
+                    <div class="px-3 mb-4">
+                        <h4 class="text-white">Client Portal</h4>
+                        <p class="text-muted small mb-0">{{ user.company_name or user.name }}</p>
+                    </div>
+                    
+                    <nav class="px-3">
+                        <a href="/client/dashboard" class="sidebar-link">
+                            <i class="bi bi-speedometer2"></i>
+                            Dashboard
+                        </a>
+                        <a href="/client/scanners" class="sidebar-link active">
+                            <i class="bi bi-shield-check"></i>
+                            My Scanners
+                        </a>
+                        <a href="/client/reports" class="sidebar-link">
+                            <i class="bi bi-file-text"></i>
+                            Reports
+                        </a>
+                        <a href="/client/settings" class="sidebar-link">
+                            <i class="bi bi-gear"></i>
+                            Settings
+                        </a>
+                        <a href="/auth/logout" class="sidebar-link">
+                            <i class="bi bi-box-arrow-right"></i>
+                            Logout
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10">
+                <div class="main-content">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h3 mb-0">Edit Scanner</h1>
+                            <p class="text-muted">Customize the appearance and settings for "{{ scanner.name }}"</p>
+                        </div>
+                        <a href="/client/scanners" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Back to My Scanners
+                        </a>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <form method="POST" enctype="multipart/form-data" id="scannerEditForm">
+                                <!-- Basic Information -->
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">
+                                            <i class="bi bi-info-circle me-2"></i>Basic Information
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="scanner_name" class="form-label">Scanner Name</label>
+                                                    <input type="text" class="form-control" id="scanner_name" name="scanner_name" 
+                                                           value="{{ scanner.name }}" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="business_domain" class="form-label">Business Domain</label>
+                                                    <input type="url" class="form-control" id="business_domain" name="business_domain" 
+                                                           value="{{ scanner.business_domain or scanner.domain or '' }}" placeholder="https://yourwebsite.com">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="mb-3">
+                                                    <label for="scanner_description" class="form-label">Scanner Description</label>
+                                                    <textarea class="form-control" id="scanner_description" name="scanner_description" rows="2" 
+                                                              placeholder="Brief description of your security services">{{ scanner.scanner_description or '' }}</textarea>
+                                                    <div class="form-text">Appears below the scanner title</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Branding & Colors -->
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">
+                                            <i class="bi bi-palette me-2"></i>Branding & Colors
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="primary_color" class="form-label">Primary Color</label>
+                                                    <div class="input-group">
+                                                        <input type="color" class="form-control form-control-color" id="primary_color" 
+                                                               name="primary_color" value="{{ scanner.primary_color or '#007bff' }}">
+                                                        <input type="text" class="form-control" value="{{ scanner.primary_color or '#007bff' }}" 
+                                                               readonly>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="secondary_color" class="form-label">Secondary Color</label>
+                                                    <div class="input-group">
+                                                        <input type="color" class="form-control form-control-color" id="secondary_color" 
+                                                               name="secondary_color" value="{{ scanner.secondary_color or '#6c757d' }}">
+                                                        <input type="text" class="form-control" value="{{ scanner.secondary_color or '#6c757d' }}" 
+                                                               readonly>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="button_color" class="form-label">Button Color</label>
+                                                    <div class="input-group">
+                                                        <input type="color" class="form-control form-control-color" id="button_color" 
+                                                               name="button_color" value="{{ scanner.button_color or scanner.primary_color or '#007bff' }}">
+                                                        <input type="text" class="form-control" value="{{ scanner.button_color or scanner.primary_color or '#007bff' }}" 
+                                                               readonly>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="logo_upload" class="form-label">Logo Upload</label>
+                                                    <input type="file" class="form-control" id="logo_upload" name="logo_upload" 
+                                                           accept="image/*">
+                                                    {% if scanner.logo_url or scanner.logo_path %}
+                                                    <div class="mt-2">
+                                                        <small class="text-muted">Current logo:</small><br>
+                                                        <img src="{{ scanner.logo_url or scanner.logo_path }}" alt="Current Logo" class="img-thumbnail" 
+                                                             style="max-height: 60px;">
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="favicon_upload" class="form-label">Favicon Upload</label>
+                                                    <input type="file" class="form-control" id="favicon_upload" name="favicon_upload" 
+                                                           accept="image/*">
+                                                    {% if scanner.favicon_path %}
+                                                    <div class="mt-2">
+                                                        <small class="text-muted">Current favicon:</small><br>
+                                                        <img src="{{ scanner.favicon_path }}" alt="Current Favicon" class="img-thumbnail" 
+                                                             style="max-height: 32px;">
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Contact Information -->
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">
+                                            <i class="bi bi-envelope me-2"></i>Contact Information
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="contact_email" class="form-label">Contact Email</label>
+                                                    <input type="email" class="form-control" id="contact_email" name="contact_email" 
+                                                           value="{{ scanner.contact_email or '' }}" placeholder="support@yourcompany.com">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="contact_phone" class="form-label">Contact Phone</label>
+                                                    <input type="tel" class="form-control" id="contact_phone" name="contact_phone" 
+                                                           value="{{ scanner.contact_phone or '' }}" placeholder="+1 (555) 123-4567">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Email Configuration -->
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">
+                                            <i class="bi bi-chat-text me-2"></i>Email Configuration
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="email_subject" class="form-label">Email Subject Line</label>
+                                            <input type="text" class="form-control" id="email_subject" name="email_subject" 
+                                                   value="{{ scanner.email_subject or 'Your Security Scan Report' }}" 
+                                                   placeholder="Your Security Scan Report">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="email_intro" class="form-label">Email Introduction Message</label>
+                                            <textarea class="form-control" id="email_intro" name="email_intro" rows="3" 
+                                                      placeholder="Thank you for using our security scanner. Please find your detailed report below.">{{ scanner.email_intro or 'Thank you for using our security scanner. Please find your detailed report attached.' }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Scanner Display Settings -->
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h5 class="card-title mb-0">
+                                            <i class="bi bi-display me-2"></i>Scanner Display Settings
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="cta_button_text" class="form-label">Call-to-Action Button Text</label>
+                                                    <input type="text" class="form-control" id="cta_button_text" name="cta_button_text" 
+                                                           value="{{ scanner.cta_button_text or 'Start Security Scan' }}" 
+                                                           placeholder="Start Security Scan">
+                                                    <div class="form-text">Text displayed on the main scan button</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="company_tagline" class="form-label">Company Tagline</label>
+                                                    <input type="text" class="form-control" id="company_tagline" name="company_tagline" 
+                                                           value="{{ scanner.company_tagline or '' }}" 
+                                                           placeholder="Protecting your digital assets">
+                                                    <div class="form-text">Displayed prominently on the scanner page</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="support_email" class="form-label">Support Contact Email</label>
+                                                    <input type="email" class="form-control" id="support_email" name="support_email" 
+                                                           value="{{ scanner.support_email or '' }}" 
+                                                           placeholder="support@yourcompany.com">
+                                                    <div class="form-text">Contact email for scanner support</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="custom_footer_text" class="form-label">Custom Footer Text</label>
+                                                    <input type="text" class="form-control" id="custom_footer_text" name="custom_footer_text" 
+                                                           value="{{ scanner.custom_footer_text or '' }}" 
+                                                           placeholder="Additional footer information">
+                                                    <div class="form-text">Displayed at the bottom of the scanner</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary" id="saveButton">
+                                        <i class="bi bi-check-lg me-2"></i>Save Changes
+                                    </button>
+                                    <a href="/client/scanners" class="btn btn-outline-secondary">Cancel</a>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <!-- Live Preview -->
+                            <div class="card sticky-top" style="top: 2rem;">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-eye me-2"></i>Live Preview
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="scanner-preview" class="border rounded p-3" style="min-height: 300px;">
+                                        <div class="text-center">
+                                            <div id="preview-logo" class="mb-3">
+                                                {% if scanner.logo_url or scanner.logo_path %}
+                                                <img src="{{ scanner.logo_url or scanner.logo_path }}" alt="Logo" style="max-height: 40px;">
+                                                {% else %}
+                                                <h5 id="preview-company">{{ scanner.business_name or user.company_name or 'Your Company' }}</h5>
+                                                {% endif %}
+                                            </div>
+                                            <h6 id="preview-welcome">Welcome to our cybersecurity scanner.</h6>
+                                            <div class="mt-3">
+                                                <button type="button" class="btn" id="preview-cta" 
+                                                        style="background-color: {{ scanner.button_color or scanner.primary_color or '#007bff' }}; color: white;">
+                                                    {{ scanner.cta_button_text or 'Start Security Scan' }}
+                                                </button>
+                                            </div>
+                                            <div class="mt-3">
+                                                <small class="text-muted" id="preview-footer">Powered by {{ user.company_name or 'CyberScan Pro' }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form submission handling
+    const form = document.getElementById('scannerEditForm');
+    const saveButton = document.getElementById('saveButton');
+    
+    if (saveButton && form) {
+        saveButton.addEventListener('click', function(e) {
+            // Prevent default button behavior and force form submission
+            e.preventDefault();
+            form.submit();
+        });
+    }
+
+    // Color picker sync
+    document.getElementById('primary_color').addEventListener('input', function() {
+        const color = this.value;
+        this.nextElementSibling.value = color;
+    });
+
+    document.getElementById('secondary_color').addEventListener('input', function() {
+        const color = this.value;
+        this.nextElementSibling.value = color;
+    });
+
+    document.getElementById('button_color').addEventListener('input', function() {
+        const color = this.value;
+        this.nextElementSibling.value = color;
+        const ctaBtn = document.getElementById('preview-cta');
+        ctaBtn.style.backgroundColor = color;
+    });
+
+    // CTA button text preview
+    document.getElementById('cta_button_text').addEventListener('input', function() {
+        const ctaBtn = document.getElementById('preview-cta');
+        ctaBtn.textContent = this.value || 'Start Security Scan';
+    });
+
+    // Logo upload preview
+    document.getElementById('logo_upload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewLogo = document.getElementById('preview-logo');
+                previewLogo.innerHTML = `<img src="${e.target.result}" alt="Logo" style="max-height: 40px;">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+});
+</script>
+</body>
+</html>

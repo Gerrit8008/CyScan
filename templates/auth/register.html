@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Register - CybrScan{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-success text-white text-center py-4">
+                    <h3 class="fw-bold mb-0">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Create Account
+                    </h3>
+                    <p class="mb-0 opacity-75">Join the CybrScan security platform</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="POST">
+                        <!-- Subscription Level Selection -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-crown me-2"></i>Choose Your Plan
+                            </label>
+                            <div class="row g-3">
+                                {% for level_id, level in subscription_tiers.items() %}
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="subscription_level" 
+                                               id="plan_{{ level_id }}" value="{{ level_id }}" 
+                                               {% if level_id == 'basic' %}checked{% endif %}>
+                                        <label class="form-check-label w-100" for="plan_{{ level_id }}">
+                                            <div class="card h-100 {% if level_id == 'professional' %}border-primary{% endif %}">
+                                                <div class="card-body text-center p-3">
+                                                    <h6 class="mb-1">{{ level.name }}</h6>
+                                                    <div class="fw-bold text-primary">
+                                                        {% if level.price == 0 %}
+                                                            Free
+                                                        {% else %}
+                                                            ${{ level.price }}/mo
+                                                        {% endif %}
+                                                    </div>
+                                                    <small class="text-muted">
+                                                        {% if level.scans_per_month == -1 %}
+                                                            Unlimited scans
+                                                        {% else %}
+                                                            {{ level.scans_per_month }} scans/month
+                                                        {% endif %}
+                                                    </small>
+                                                    {% if not level.requires_payment %}
+                                                        <div class="badge bg-success mt-1">No Card Required</div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <!-- User Information -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="username" name="username" 
+                                           placeholder="username" required minlength="3">
+                                    <label for="username">
+                                        <i class="fas fa-user me-2"></i>Username
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           placeholder="name@example.com" required>
+                                    <label for="email">
+                                        <i class="fas fa-envelope me-2"></i>Email Address
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="password" class="form-control" id="password" name="password" 
+                                           placeholder="Password" required minlength="6">
+                                    <label for="password">
+                                        <i class="fas fa-lock me-2"></i>Password
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="password" class="form-control" id="confirm_password" 
+                                           name="confirm_password" placeholder="Confirm Password" required>
+                                    <label for="confirm_password">
+                                        <i class="fas fa-lock me-2"></i>Confirm Password
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="full_name" name="full_name" 
+                                   placeholder="Full Name" required>
+                            <label for="full_name">
+                                <i class="fas fa-id-card me-2"></i>Full Name
+                            </label>
+                        </div>
+                        
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="company" name="company" 
+                                   placeholder="Company (Optional)">
+                            <label for="company">
+                                <i class="fas fa-building me-2"></i>Company (Optional)
+                            </label>
+                        </div>
+                        
+                        <!-- Terms and Conditions -->
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the 
+                                <a href="#" class="text-primary">Terms of Service</a> and 
+                                <a href="#" class="text-primary">Privacy Policy</a>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="newsletter">
+                            <label class="form-check-label" for="newsletter">
+                                Send me security tips and product updates
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success btn-lg w-100 mb-3">
+                            <i class="fas fa-user-plus me-2"></i>Create Account
+                        </button>
+                        
+                        <div class="text-center">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Your data is protected with enterprise-grade security
+                            </small>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-footer text-center py-3 bg-light">
+                    <div class="small">
+                        Already have an account?
+                        <a href="{{ url_for('login') }}" class="text-primary fw-bold text-decoration-none">
+                            Sign in here
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Password confirmation validation
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    
+    function validatePassword() {
+        if (password.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity('Passwords do not match');
+        } else {
+            confirmPassword.setCustomValidity('');
+        }
+    }
+    
+    password.addEventListener('change', validatePassword);
+    confirmPassword.addEventListener('keyup', validatePassword);
+    
+    // Username availability check (simulated)
+    const username = document.getElementById('username');
+    username.addEventListener('blur', function() {
+        if (this.value.length >= 3) {
+            // In a real app, you'd make an AJAX call here
+            this.classList.add('is-valid');
+        }
+    });
+    
+    // Plan selection highlighting
+    const planRadios = document.querySelectorAll('input[name="subscription_level"]');
+    planRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            // Remove previous selection styling
+            document.querySelectorAll('.form-check-label .card').forEach(card => {
+                card.classList.remove('border-primary', 'bg-primary', 'text-white');
+            });
+            
+            // Add styling to selected plan
+            if (this.checked) {
+                const card = this.parentElement.querySelector('.card');
+                card.classList.add('border-primary');
+                if (this.value === 'professional') {
+                    card.classList.add('bg-primary', 'text-white');
+                }
+            }
+        });
+    });
+    
+    // Trigger initial plan styling
+    const checkedPlan = document.querySelector('input[name="subscription_level"]:checked');
+    if (checkedPlan) {
+        checkedPlan.dispatchEvent(new Event('change'));
+    }
+});
+</script>
+{% endblock %}

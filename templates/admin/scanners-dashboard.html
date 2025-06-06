@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner Management - Admin Dashboard</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon.png.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon.png.png">
+    <link rel="shortcut icon" href="/static/images/favicon.png.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 p-0 sidebar">
+                <div class="text-center mb-4">
+                    <h4>Scanner Platform</h4>
+                    <p class="mb-0 small">Admin Panel</p>
+                </div>
+    
+                <div class="px-3">
+                    <a href="/admin/dashboard" class="sidebar-link">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    <a href="/admin/clients" class="sidebar-link">
+                        <i class="bi bi-people"></i> Client Management
+                    </a>
+                    <a href="/admin/scanners" class="sidebar-link active">
+                        <i class="bi bi-shield-check"></i> Scanner Management
+                    </a>
+                    <a href="/customize" class="sidebar-link">
+                        <i class="bi bi-plus-circle"></i> Create Scanner
+                    </a>
+                    <a href="/admin/subscriptions" class="sidebar-link">
+                        <i class="bi bi-credit-card"></i> Subscriptions
+                    </a>
+                    <a href="/admin/reports" class="sidebar-link">
+                        <i class="bi bi-file-earmark-text"></i> Reports
+                    </a>
+                    <a href="/admin/settings" class="sidebar-link">
+                        <i class="bi bi-gear"></i> Settings
+                    </a>
+        
+                    <hr class="my-4">
+        
+                    <a href="/auth/logout" class="sidebar-link text-danger">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 ms-auto main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Scanner Management</h2>
+                    <div>
+                        <span class="badge bg-primary">Admin</span>
+                        <span class="ms-2">{{ user.username }}</span>
+                    </div>
+                </div>
+                
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <!-- Scanner Overview -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="card stat-card border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="stat-value text-primary">{{ scanners|length|default('0') }}</div>
+                                <h6 class="mb-0">Total Scanners</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="stat-value text-success">
+                                    {{ scanners|selectattr('status', 'equalto', 'active')|list|length|default('0') }}
+                                </div>
+                                <h6 class="mb-0">Active Scanners</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="stat-value text-info">
+                                    {% set total_scans = scanners|sum(attribute='scan_count')|default(0) %}
+                                    {{ total_scans }}
+                                </div>
+                                <h6 class="mb-0">Total Scans</h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="stat-value text-warning">
+                                    {{ scanners|groupby('client_id')|list|length|default('0') }}
+                                </div>
+                                <h6 class="mb-0">Unique Clients</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scanners Table -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">All Scanners</h5>
+                            <a href="/customize" class="btn btn-primary btn-sm">
+                                <i class="bi bi-plus"></i> Create New Scanner
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Scanner Name</th>
+                                        <th>Client</th>
+                                        <th>Domain</th>
+                                        <th>Status</th>
+                                        <th>Total Scans</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if scanners %}
+                                        {% for scanner in scanners %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="scanner-icon me-3" style="width: 32px; height: 32px; background: {{ scanner.primary_color or '#007bff' }}; border-radius: 0.25rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: bold;">
+                                                        {{ scanner.name[0]|upper if scanner.name else 'S' }}
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-semibold">{{ scanner.name }}</div>
+                                                        {% if scanner.description %}
+                                                            <small class="text-muted">{{ scanner.description[:50] }}{% if scanner.description|length > 50 %}...{% endif %}</small>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>{{ scanner.client_name or 'Unknown Client' }}</div>
+                                                {% if scanner.client_email %}
+                                                    <small class="text-muted">{{ scanner.client_email }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if scanner.domain %}
+                                                    <a href="{{ scanner.domain }}" target="_blank" class="text-decoration-none">
+                                                        {{ scanner.domain|replace('https://', '')|replace('http://', '') }}
+                                                        <i class="bi bi-box-arrow-up-right ms-1"></i>
+                                                    </a>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ 'success' if scanner.status == 'active' else 'warning' if scanner.status == 'inactive' else 'danger' }}">
+                                                    {{ scanner.status|title }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-light text-dark">{{ scanner.scan_count or 0 }}</span>
+                                            </td>
+                                            <td>
+                                                {{ scanner.created_at[:10] if scanner.created_at else '-' }}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary" title="View Details">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-secondary" title="Edit">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger" title="Deactivate">
+                                                        <i class="bi bi-pause"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <!-- Sample data when no scanners -->
+                                        <tr>
+                                            <td colspan="7" class="text-center py-4">
+                                                <div class="text-muted">
+                                                    <i class="bi bi-shield-check display-1 mb-3"></i>
+                                                    <h5>No scanners created yet</h5>
+                                                    <p>Scanners created by clients will appear here</p>
+                                                    <a href="/customize" class="btn btn-primary">
+                                                        <i class="bi bi-plus-circle"></i> Create First Scanner
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

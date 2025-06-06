@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan Reports - Scanner Platform</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon.png.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon.png.png">
+    <link rel="shortcut icon" href="/static/images/favicon.png.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        .sidebar {
+            background-color: #2c3e50;
+            color: white;
+            min-height: 100vh;
+            padding-top: 2rem;
+        }
+        
+        .sidebar-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .sidebar-link i {
+            margin-right: 0.75rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        .score-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+        
+        .score-excellent { background-color: #d1e7dd; color: #0f5132; }
+        .score-good { background-color: #d4edda; color: #155724; }
+        .score-warning { background-color: #fff3cd; color: #856404; }
+        .score-danger { background-color: #f8d7da; color: #721c24; }
+        
+        .table th {
+            background-color: #f8f9fa;
+            border-top: none;
+            font-weight: 600;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .company-size-badge {
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.2rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .size-small { background-color: #e3f2fd; color: #1976d2; }
+        .size-medium { background-color: #f3e5f5; color: #7b1fa2; }
+        .size-large { background-color: #fff3e0; color: #f57c00; }
+        .size-enterprise { background-color: #ffebee; color: #c62828; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 p-0 sidebar">
+                <div class="text-center mb-4">
+                    <h4>Scanner Platform</h4>
+                    <p class="mb-0 small">Client Portal</p>
+                </div>
+                
+                <div class="px-3">
+                    <a href="/client/dashboard" class="sidebar-link">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    <a href="/client/scanners" class="sidebar-link">
+                        <i class="bi bi-shield-check"></i> My Scanners
+                    </a>
+                    <a href="/client/reports" class="sidebar-link active">
+                        <i class="bi bi-file-earmark-text"></i> Scan Reports
+                    </a>
+                    <a href="/client/settings" class="sidebar-link">
+                        <i class="bi bi-gear"></i> Settings
+                    </a>
+                    
+                    <hr class="my-4">
+                    
+                    <a href="{{ url_for('auth.logout') }}" class="sidebar-link text-danger">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 ms-auto main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2>Scan Reports</h2>
+                        <p class="text-muted">Detailed reports of all scans performed by your clients</p>
+                    </div>
+                    <div>
+                        <span class="badge bg-primary">{{ user_client.subscription_level|default('Basic')|title }}</span>
+                        <span class="ms-2">{{ user.username }}</span>
+                    </div>
+                </div>
+                
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form method="get" class="row g-3">
+                            <div class="col-md-3">
+                                <label for="search" class="form-label">Search</label>
+                                <input type="text" class="form-control" id="search" name="search" 
+                                       placeholder="Name, email, company..." value="{{ filters.get('search', '') }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="date_from" class="form-label">From Date</label>
+                                <input type="date" class="form-control" id="date_from" name="date_from" 
+                                       value="{{ filters.get('date_from', '') }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="date_to" class="form-label">To Date</label>
+                                <input type="date" class="form-control" id="date_to" name="date_to" 
+                                       value="{{ filters.get('date_to', '') }}">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="score_min" class="form-label">Min Score</label>
+                                <input type="number" class="form-control" id="score_min" name="score_min" 
+                                       min="0" max="100" value="{{ filters.get('score_min', '') }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">&nbsp;</label>
+                                <div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-search me-1"></i>Search
+                                    </button>
+                                    <a href="/client/reports" class="btn btn-outline-secondary">Clear</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Summary Stats -->
+                {% if scan_stats %}
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Scans</h5>
+                                <h3 class="text-primary">{{ scan_stats.total_scans }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">Average Score</h5>
+                                <h3 class="text-success">{{ "%.1f"|format(scan_stats.avg_score) }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">This Month</h5>
+                                <h3 class="text-info">{{ scan_stats.this_month }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">Unique Companies</h5>
+                                <h3 class="text-warning">{{ scan_stats.unique_companies }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Scan Reports Table -->
+                {% if scan_reports %}
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Scan Reports ({{ pagination.total_count }} total)</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Phone</th>
+                                            <th>Company</th>
+                                            <th>Score</th>
+                                            <th>Full Report</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for report in scan_reports %}
+                                            <tr>
+                                                <td>
+                                                    <small class="text-muted">
+                                                        {{ report.created_at[:10] if report.created_at else 'Unknown' }}<br>
+                                                        <span class="badge bg-light text-dark">{{ report.created_at[11:16] if report.created_at else '' }}</span>
+                                                    </small>
+                                                </td>
+                                                <td>
+                                                    <strong>{{ report.lead_name or 'Unknown Name' }}</strong>
+                                                </td>
+                                                <td>
+                                                    <a href="mailto:{{ report.lead_email }}" class="text-decoration-none">
+                                                        {{ report.lead_email or 'No email' }}
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    {% if report.lead_phone %}
+                                                        <a href="tel:{{ report.lead_phone }}" class="text-decoration-none">
+                                                            {{ report.lead_phone }}
+                                                        </a>
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <div>
+                                                        <strong>{{ report.lead_company or 'Unknown Company' }}</strong>
+                                                        {% if report.company_size and report.company_size != 'Unknown' %}
+                                                            <br><small class="badge 
+                                                                {% if report.company_size == 'Small' %}bg-info
+                                                                {% elif report.company_size == 'Medium' %}bg-warning  
+                                                                {% elif report.company_size == 'Large' %}bg-success
+                                                                {% elif report.company_size == 'Enterprise' %}bg-danger
+                                                                {% else %}bg-secondary{% endif %}">
+                                                                {{ report.company_size }}
+                                                            </small>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge fs-6 
+                                                        {% if report.security_score >= 90 %}bg-success
+                                                        {% elif report.security_score >= 75 %}bg-primary
+                                                        {% elif report.security_score >= 50 %}bg-warning text-dark
+                                                        {% else %}bg-danger{% endif %}">
+                                                        {{ report.security_score or 'N/A' }}{% if report.security_score %}/100{% endif %}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <a href="/results?scan_id={{ report.scan_id }}" target="_blank" 
+                                                       class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="View Complete Security Report">
+                                                        <i class="bi bi-file-earmark-text me-1"></i>View Report
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if pagination.total_pages > 1 %}
+                        <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if pagination.page > 1 %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('client.scan_reports', page=pagination.page-1, **filters) }}">Previous</a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for page_num in range(1, pagination.total_pages + 1) %}
+                                    {% if page_num == pagination.page %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% elif page_num <= 2 or page_num >= pagination.total_pages - 1 or (page_num >= pagination.page - 2 and page_num <= pagination.page + 2) %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('client.scan_reports', page=page_num, **filters) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% elif page_num == 3 or page_num == pagination.total_pages - 2 %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if pagination.page < pagination.total_pages %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('client.scan_reports', page=pagination.page+1, **filters) }}">Next</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <i class="bi bi-file-earmark-text display-4 text-muted mb-3"></i>
+                            <h4>No Scan Reports Found</h4>
+                            <p class="text-muted">No scans have been performed yet or no scans match your filters.</p>
+                            <a href="/client/scanners" class="btn btn-primary">
+                                <i class="bi bi-shield-check me-1"></i>View My Scanners
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+</body>
+</html>

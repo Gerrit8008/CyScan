@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Login - CybrScan{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h3 class="fw-bold mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Welcome Back
+                    </h3>
+                    <p class="mb-0 opacity-75">Sign in to your CybrScan account</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="POST">
+                        <div class="form-floating mb-3">
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   placeholder="name@example.com" required>
+                            <label for="email">
+                                <i class="fas fa-envelope me-2"></i>Email Address
+                            </label>
+                        </div>
+                        
+                        <div class="form-floating mb-3">
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="Password" required>
+                            <label for="password">
+                                <i class="fas fa-lock me-2"></i>Password
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                            <label class="form-check-label" for="remember">
+                                Remember me on this device
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </button>
+                        
+                        <div class="text-center">
+                            <a href="#" class="text-muted text-decoration-none">
+                                <i class="fas fa-question-circle me-1"></i>Forgot your password?
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-footer text-center py-3 bg-light">
+                    <div class="small">
+                        Don't have an account?
+                        <a href="{{ url_for('register') }}" class="text-primary fw-bold text-decoration-none">
+                            Create one here
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Demo Credentials -->
+            <div class="card mt-3 border-warning">
+                <div class="card-body text-center py-3">
+                    <h6 class="text-warning mb-2">
+                        <i class="fas fa-info-circle me-1"></i>Demo Credentials
+                    </h6>
+                    <div class="small text-muted">
+                        <strong>Admin:</strong> admin@cybrscan.com / admin123<br>
+                        <strong>User:</strong> demo@example.com / demo123
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Focus on email field
+    document.getElementById('email').focus();
+    
+    // Demo credential quick fill
+    const demoButtons = document.querySelectorAll('[data-demo]');
+    demoButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const type = this.dataset.demo;
+            if (type === 'admin') {
+                document.getElementById('email').value = 'admin@cybrscan.com';
+                document.getElementById('password').value = 'admin123';
+            } else if (type === 'user') {
+                document.getElementById('email').value = 'demo@example.com';
+                document.getElementById('password').value = 'demo123';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

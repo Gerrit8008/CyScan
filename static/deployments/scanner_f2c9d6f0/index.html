@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Colors Scanner - Security Scanner</title>
+    
+    <!-- Custom Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/custom-favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/custom-favicon.ico">
+    <link rel="shortcut icon" href="/static/custom-favicon.ico">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./scanner-styles.css">
+    <style>
+        :root {
+            --primary-color: #ff4444;
+            --secondary-color: #44ff44;
+            --button-color: #4444ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="scanner-container">
+        <div class="scanner-header">
+            
+            <img src="https://testcustom.com/logo.png" alt="Test Custom Colors Corp Logo" class="scanner-logo">
+            
+            <h2 class="scanner-title">Custom Colors Scanner</h2>
+            <p class="scanner-description">Free security scan for Test Custom Colors Corp</p>
+        </div>
+        
+        <div class="scanner-form-container">
+            <form id="scannerForm" class="scanner-form">
+                <div class="form-group mb-3">
+                    <label for="target_url" class="form-label">Website URL to Scan</label>
+                    <input type="url" 
+                           id="target_url" 
+                           name="target_url" 
+                           class="form-control scanner-input" 
+                           placeholder="https://example.com" 
+                           required>
+                    <div class="form-text">Enter your website URL for a comprehensive security analysis</div>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="contact_email" class="form-label">Email Address</label>
+                    <input type="email" 
+                           id="contact_email" 
+                           name="contact_email" 
+                           class="form-control scanner-input" 
+                           placeholder="your@email.com" 
+                           required>
+                    <div class="form-text">We'll send your security report to this email</div>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="contact_name" class="form-label">Name (Optional)</label>
+                    <input type="text" 
+                           id="contact_name" 
+                           name="contact_name" 
+                           class="form-control scanner-input" 
+                           placeholder="Your Name">
+                </div>
+                
+                <div class="scan-types mb-3">
+                    <label class="form-label">Scan Types</label>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="scan_types[]" value="port_scan" id="port_scan" checked>
+                        <label class="form-check-label" for="port_scan">
+                            Port Scan
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="scan_types[]" value="ssl_check" id="ssl_check" checked>
+                        <label class="form-check-label" for="ssl_check">
+                            Ssl Check
+                        </label>
+                    </div>
+                    
+                </div>
+                
+                <button type="submit" class="btn scanner-submit-btn w-100">
+                    <span class="btn-text">Start Free Security Scan</span>
+                    <span class="btn-spinner d-none">
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        Scanning...
+                    </span>
+                </button>
+            </form>
+            
+            <div id="scanResults" class="scan-results d-none">
+                <div class="alert alert-info">
+                    <h5>Scan Initiated!</h5>
+                    <p>Your security scan has been started. Results will be emailed to you shortly.</p>
+                    <div class="scan-id">Scan ID: <span id="scanIdDisplay"></span></div>
+                </div>
+            </div>
+            
+            <div id="scanError" class="scan-error d-none">
+                <div class="alert alert-danger">
+                    <h5>Scan Failed</h5>
+                    <p id="errorMessage">An error occurred during the scan. Please try again.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scanner-footer">
+            <p class="text-muted small">
+                Powered by Test Custom Colors Corp | 
+                <a href="mailto:testuser_1748274391@testcompany.com" class="text-decoration-none">Contact Support</a>
+            </p>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="./scanner-script.js"></script>
+    <script>
+        // Initialize scanner with configuration
+        window.ScannerConfig = {
+            apiKey: '278f61aafed84c24a8edf80f200f0585',
+            scannerUid: 'scanner_f2c9d6f0',
+            apiBaseUrl: window.location.origin + '/api/scanner/scanner_f2c9d6f0'
+        };
+    </script>
+</body>
+</html>
+        

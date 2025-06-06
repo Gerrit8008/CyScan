@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner Deployment - {{ scanner.name }}</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon.png.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon.png.png">
+    <link rel="shortcut icon" href="/static/images/favicon.png.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+        }
+        .deployment-card {
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+        .integration-option {
+            padding: 1.5rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .integration-option:hover {
+            border-color: var(--bs-primary);
+            background-color: #f8f9fa;
+        }
+        .integration-option.active {
+            border-color: var(--bs-primary);
+            background-color: #e7f3ff;
+        }
+        .scanner-preview {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        .relative {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 p-0 sidebar">
+                <div class="text-center mb-4">
+                    <h4>Scanner Platform</h4>
+                    <p class="mb-0 small">Admin Panel</p>
+                </div>
+    
+                <div class="px-3">
+                    <a href="/admin/dashboard" class="sidebar-link">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    <a href="/admin/clients" class="sidebar-link">
+                        <i class="bi bi-people"></i> Client Management
+                    </a>
+                    <a href="/admin/scanners" class="sidebar-link">
+                        <i class="bi bi-shield-check"></i> Scanner Management
+                    </a>
+                    <a href="/customize" class="sidebar-link">
+                        <i class="bi bi-plus-circle"></i> Create Scanner
+                    </a>
+                    <a href="/admin/subscriptions" class="sidebar-link">
+                        <i class="bi bi-credit-card"></i> Subscriptions
+                    </a>
+                    <a href="/admin/reports" class="sidebar-link">
+                        <i class="bi bi-file-earmark-text"></i> Reports
+                    </a>
+                    <a href="/admin/settings" class="sidebar-link">
+                        <i class="bi bi-gear"></i> Settings
+                    </a>
+        
+                    <hr class="my-4">
+        
+                    <a href="/auth/logout" class="sidebar-link text-danger">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 ms-auto main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2>Scanner Deployment</h2>
+                        <p class="text-muted mb-0">{{ scanner.name }} - Ready for Integration</p>
+                    </div>
+                    <div>
+                        <span class="badge bg-success">Scanner Created</span>
+                        <span class="ms-2">{{ scanner.scanner_id }}</span>
+                    </div>
+                </div>
+                
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                <!-- Scanner Overview -->
+                <div class="row mb-4">
+                    <div class="col-lg-8">
+                        <div class="card deployment-card">
+                            <div class="card-header bg-white">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-info-circle text-primary me-2"></i>
+                                    Scanner Information
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <dl class="row">
+                                            <dt class="col-sm-4">Name:</dt>
+                                            <dd class="col-sm-8">{{ scanner.name }}</dd>
+                                            
+                                            <dt class="col-sm-4">Scanner ID:</dt>
+                                            <dd class="col-sm-8"><code>{{ scanner.scanner_id }}</code></dd>
+                                            
+                                            <dt class="col-sm-4">Client:</dt>
+                                            <dd class="col-sm-8">{{ scanner.business_name or 'Unknown' }}</dd>
+                                            
+                                            <dt class="col-sm-4">Domain:</dt>
+                                            <dd class="col-sm-8">{{ scanner.domain or 'Not specified' }}</dd>
+                                        </dl>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <dl class="row">
+                                            <dt class="col-sm-4">Status:</dt>
+                                            <dd class="col-sm-8">
+                                                <span class="badge bg-success">{{ scanner.status|title }}</span>
+                                            </dd>
+                                            
+                                            <dt class="col-sm-4">API Key:</dt>
+                                            <dd class="col-sm-8">
+                                                <code>{{ scanner.api_key[:20] }}...</code>
+                                                <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('{{ scanner.api_key }}')">
+                                                    <i class="bi bi-clipboard"></i>
+                                                </button>
+                                            </dd>
+                                            
+                                            <dt class="col-sm-4">Created:</dt>
+                                            <dd class="col-sm-8">{{ scanner.created_at[:10] if scanner.created_at else 'Unknown' }}</dd>
+                                            
+                                            <dt class="col-sm-4">Scan Types:</dt>
+                                            <dd class="col-sm-8">{{ scanner.scan_types or 'port_scan,ssl_check' }}</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card deployment-card">
+                            <div class="card-header bg-white">
+                                <h6 class="mb-0">Quick Actions</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <a href="{{ deployment_info.embed_url }}" target="_blank" class="btn btn-primary">
+                                        <i class="bi bi-eye me-2"></i>Preview Scanner
+                                    </a>
+                                    <a href="{{ deployment_info.download_url }}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-download me-2"></i>Download Files
+                                    </a>
+                                    <button class="btn btn-outline-info" onclick="showApiDocs()">
+                                        <i class="bi bi-book me-2"></i>API Documentation
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Integration Options -->
+                <div class="card deployment-card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-code-square text-primary me-2"></i>
+                            Integration Options
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Integration Method Selector -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="integration-option" onclick="showIntegration('iframe')" id="iframe-option">
+                                    <h6><i class="bi bi-window me-2"></i>HTML Embed (Recommended)</h6>
+                                    <p class="text-muted mb-0">Simple iframe embed for any website</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="integration-option" onclick="showIntegration('api')" id="api-option">
+                                    <h6><i class="bi bi-cloud me-2"></i>API Integration</h6>
+                                    <p class="text-muted mb-0">Direct API calls for custom implementations</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="integration-option" onclick="showIntegration('download')" id="download-option">
+                                    <h6><i class="bi bi-download me-2"></i>Self-Hosted</h6>
+                                    <p class="text-muted mb-0">Download and host the scanner files</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Integration Code Blocks -->
+                        <div id="iframe-integration" class="integration-content">
+                            <h6>HTML Embed Code</h6>
+                            <p class="text-muted">Copy and paste this code into your website where you want the scanner to appear:</p>
+                            <div class="relative">
+                                <div class="code-block">
+&lt;!-- Security Scanner Widget --&gt;
+&lt;iframe src="{{ deployment_info.embed_url }}" 
+        width="100%" 
+        height="600" 
+        frameborder="0"
+        style="border: 1px solid #ddd; border-radius: 8px;"&gt;
+&lt;/iframe&gt;</div>
+                                <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard(`{{ deployment_info.embed_url }}`)">
+                                    <i class="bi bi-clipboard"></i> Copy
+                                </button>
+                            </div>
+                            
+                            <h6 class="mt-4">WordPress Integration</h6>
+                            <p class="text-muted">For WordPress sites, use this shortcode:</p>
+                            <div class="relative">
+                                <div class="code-block">[iframe src="{{ deployment_info.embed_url }}" width="100%" height="600"]</div>
+                                <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('[iframe src=&quot;{{ deployment_info.embed_url }}&quot; width=&quot;100%&quot; height=&quot;600&quot;]')">
+                                    <i class="bi bi-clipboard"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="api-integration" class="integration-content d-none">
+                            <h6>API Endpoints</h6>
+                            <p class="text-muted">Use these endpoints to integrate scanner functionality into your application:</p>
+                            
+                            <div class="mb-4">
+                                <h6>Start a Scan</h6>
+                                <div class="relative">
+                                    <div class="code-block">
+POST {{ deployment_info.api_url }}/scan
+Authorization: Bearer {{ scanner.api_key }}
+Content-Type: application/json
+
+{
+  "target_url": "https://example.com",
+  "contact_email": "user@example.com",
+  "contact_name": "John Doe",
+  "scan_types": ["port_scan", "ssl_check"]
+}</div>
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard('{{ deployment_info.api_url }}/scan')">
+                                        <i class="bi bi-clipboard"></i> Copy URL
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <h6>JavaScript Example</h6>
+                                <div class="relative">
+                                    <div class="code-block">
+fetch('{{ deployment_info.api_url }}/scan', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer {{ scanner.api_key }}'
+  },
+  body: JSON.stringify({
+    target_url: 'https://example.com',
+    contact_email: 'user@example.com',
+    scan_types: ['port_scan', 'ssl_check']
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));</div>
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" onclick="copyToClipboard(`fetch('{{ deployment_info.api_url }}/scan', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer {{ scanner.api_key }}' }, body: JSON.stringify({ target_url: 'https://example.com', contact_email: 'user@example.com', scan_types: ['port_scan', 'ssl_check'] }) }).then(response => response.json()).then(data => console.log(data));`)">
+                                        <i class="bi bi-clipboard"></i> Copy
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="download-integration" class="integration-content d-none">
+                            <h6>Download Scanner Files</h6>
+                            <p class="text-muted">Download the complete scanner package to host on your own server:</p>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 text-center">
+                                        <i class="bi bi-file-zip display-4 text-primary mb-2"></i>
+                                        <h6>Complete Package</h6>
+                                        <p class="text-muted small">HTML, CSS, JS, and documentation</p>
+                                        <a href="{{ deployment_info.download_url }}" class="btn btn-primary">
+                                            <i class="bi bi-download me-2"></i>Download ZIP
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3">
+                                        <h6>Package Contents:</h6>
+                                        <ul class="list-unstyled small">
+                                            <li><i class="bi bi-file-code text-warning"></i> index.html - Main scanner page</li>
+                                            <li><i class="bi bi-palette text-info"></i> scanner-styles.css - Custom styling</li>
+                                            <li><i class="bi bi-filetype-js text-success"></i> scanner-script.js - Functionality</li>
+                                            <li><i class="bi bi-file-text text-secondary"></i> api-docs.md - Documentation</li>
+                                            <li><i class="bi bi-code-slash text-primary"></i> embed-snippet.html - Embed code</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Preview -->
+                <div class="card deployment-card">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-eye text-primary me-2"></i>
+                            Live Preview
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="scanner-preview">
+                            <iframe src="{{ deployment_info.embed_url }}" 
+                                    width="100%" 
+                                    height="600" 
+                                    frameborder="0">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Integration option selection
+        function showIntegration(type) {
+            // Hide all integration content
+            document.querySelectorAll('.integration-content').forEach(el => {
+                el.classList.add('d-none');
+            });
+            
+            // Remove active class from all options
+            document.querySelectorAll('.integration-option').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Show selected integration content
+            document.getElementById(type + '-integration').classList.remove('d-none');
+            document.getElementById(type + '-option').classList.add('active');
+        }
+        
+        // Copy to clipboard function
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                // Show success message
+                const toast = document.createElement('div');
+                toast.className = 'toast-notification';
+                toast.textContent = 'Copied to clipboard!';
+                toast.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 10px 20px; border-radius: 4px; z-index: 9999;';
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 2000);
+            });
+        }
+        
+        function showApiDocs() {
+            window.open('{{ deployment_info.docs_url }}', '_blank');
+        }
+        
+        // Initialize with iframe option selected
+        document.addEventListener('DOMContentLoaded', function() {
+            showIntegration('iframe');
+        });
+    </script>
+    
+    <style>
+        .sidebar {
+            background-color: #2c3e50;
+            color: white;
+            min-height: 100vh;
+            padding-top: 2rem;
+        }
+        
+        .sidebar-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .sidebar-link i {
+            margin-right: 0.75rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+    </style>
+</body>
+</html>

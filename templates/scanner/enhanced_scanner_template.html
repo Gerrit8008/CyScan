@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ scanner_title }} - {{ company_name if company_name else 'Security Scanner' }}</title>
+    
+    <!-- Custom Favicon -->
+    {% if custom_favicon %}
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ custom_favicon }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ custom_favicon }}">
+    <link rel="shortcut icon" href="{{ custom_favicon }}">
+    {% else %}
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon.png">
+    <link rel="shortcut icon" href="/static/images/favicon.png">
+    {% endif %}
+    
+    <!-- Meta Tags for SEO and Social Sharing -->
+    <meta name="description" content="{{ scanner_description if scanner_description else 'Free website security scan and vulnerability assessment' }}">
+    <meta name="keywords" content="security scan, vulnerability assessment, website security, {{ company_name if company_name else 'cybersecurity' }}">
+    <meta name="author" content="{{ company_name if company_name else 'CybrScan' }}">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:title" content="{{ scanner_title }} - {{ company_name if company_name else 'Security Scanner' }}">
+    <meta property="og:description" content="{{ scanner_description if scanner_description else 'Free website security scan and vulnerability assessment' }}">
+    {% if custom_logo %}
+    <meta property="og:image" content="{{ custom_logo }}">
+    {% endif %}
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.url }}">
+    <meta property="twitter:title" content="{{ scanner_title }} - {{ company_name if company_name else 'Security Scanner' }}">
+    <meta property="twitter:description" content="{{ scanner_description if scanner_description else 'Free website security scan and vulnerability assessment' }}">
+    {% if custom_logo %}
+    <meta property="twitter:image" content="{{ custom_logo }}">
+    {% endif %}
+    
+    <!-- Bootstrap and Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS Variables for Theming -->
+    <style>
+        :root {
+            --primary-color: {{ primary_color if primary_color else '#2563eb' }};
+            --secondary-color: {{ secondary_color if secondary_color else '#64748b' }};
+            --accent-color: {{ accent_color if accent_color else '#0ea5e9' }};
+            --background-color: {{ background_color if background_color else '#ffffff' }};
+            --text-color: {{ text_color if text_color else '#1f2937' }};
+            --button-color: {{ button_color if button_color else '#2563eb' }};
+            --button-text-color: {{ button_text_color if button_text_color else '#ffffff' }};
+            --border-radius: {{ border_radius if border_radius else '8px' }};
+            --font-family: {{ custom_font if custom_font else "'Inter', sans-serif" }};
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .scanner-container {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            width: 100%;
+            max-width: 600px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .scanner-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .scanner-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .scanner-logo {
+            max-height: 60px;
+            max-width: 200px;
+            object-fit: contain;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+            {% if not custom_logo %}display: none;{% endif %}
+        }
+
+        .scanner-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .scanner-description {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .scanner-form-container {
+            padding: 2rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .scanner-input {
+            border: 2px solid #e5e7eb;
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .scanner-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-text {
+            font-size: 0.875rem;
+            color: var(--secondary-color);
+            margin-top: 0.25rem;
+        }
+
+        .scan-types {
+            background-color: #f8fafc;
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .form-check {
+            margin-bottom: 0.5rem;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .form-check-label {
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+
+        .scanner-submit-btn {
+            background: linear-gradient(135deg, var(--button-color), var(--accent-color));
+            color: var(--button-text-color);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scanner-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.3);
+        }
+
+        .scanner-submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .scanner-submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-spinner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scan-results {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: var(--border-radius);
+        }
+
+        .scan-results .alert {
+            margin-bottom: 0;
+        }
+
+        .scan-id {
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            background-color: rgba(37, 99, 235, 0.1);
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+        }
+
+        .security-badges {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .security-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #f8fafc;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            font-size: 0.875rem;
+            color: var(--secondary-color);
+        }
+
+        .security-badge i {
+            color: var(--primary-color);
+        }
+
+        .trust-indicators {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .trust-indicators p {
+            font-size: 0.875rem;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .powered-by {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--secondary-color);
+            opacity: 0.7;
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 1rem;
+        }
+
+        .progress {
+            height: 8px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            transition: width 0.3s ease;
+        }
+
+        .status-text {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--secondary-color);
+        }
+
+        {% if custom_css %}
+        {{ custom_css|safe }}
+        {% endif %}
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .scanner-container {
+                margin: 10px;
+                border-radius: 0;
+            }
+            
+            .scanner-header {
+                padding: 1.5rem;
+            }
+            
+            .scanner-title {
+                font-size: 1.5rem;
+            }
+            
+            .scanner-form-container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scanner-container">
+        <div class="scanner-header">
+            {% if custom_logo %}
+            <img src="{{ custom_logo }}" alt="{{ company_name if company_name else 'Company' }} Logo" class="scanner-logo">
+            {% endif %}
+            
+            <h1 class="scanner-title">{{ scanner_title if scanner_title else 'Security Vulnerability Scanner' }}</h1>
+            <p class="scanner-description">{{ scanner_description if scanner_description else 'Free comprehensive security scan for your website' }}</p>
+        </div>
+        
+        <div class="scanner-form-container">
+            <form id="scannerForm" class="scanner-form">
+                <input type="hidden" name="scanner_id" value="{{ scanner_id }}">
+                <input type="hidden" name="api_key" value="{{ api_key }}">
+                
+                <div class="form-group mb-3">
+                    <label for="target_url" class="form-label">
+                        <i class="bi bi-globe"></i> Website URL to Scan
+                    </label>
+                    <input type="url" 
+                           id="target_url" 
+                           name="target_url" 
+                           class="form-control scanner-input" 
+                           placeholder="https://your-website.com" 
+                           required>
+                    <div class="form-text">Enter your website URL for a comprehensive security analysis</div>
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="contact_email" class="form-label">
+                        <i class="bi bi-envelope"></i> Email Address
+                    </label>
+                    <input type="email" 
+                           id="contact_email" 
+                           name="contact_email" 
+                           class="form-control scanner-input" 
+                           placeholder="your@email.com" 
+                           required>
+                    <div class="form-text">We'll send your detailed security report to this email address</div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="contact_name" class="form-label">
+                                <i class="bi bi-person"></i> Name
+                            </label>
+                            <input type="text" 
+                                   id="contact_name" 
+                                   name="contact_name" 
+                                   class="form-control scanner-input" 
+                                   placeholder="Your Name">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="contact_company" class="form-label">
+                                <i class="bi bi-building"></i> Company (Optional)
+                            </label>
+                            <input type="text" 
+                                   id="contact_company" 
+                                   name="contact_company" 
+                                   class="form-control scanner-input" 
+                                   placeholder="Company Name">
+                        </div>
+                    </div>
+                </div>
+                
+                {% if show_scan_options %}
+                <div class="scan-types mb-3">
+                    <label class="form-label">
+                        <i class="bi bi-shield-check"></i> Security Scan Types
+                    </label>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="scan_types[]" value="port_scan" id="port_scan" checked>
+                        <label class="form-check-label" for="port_scan">
+                            Port Security Scan
+                            <small class="d-block text-muted">Check for open ports and vulnerabilities</small>
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="scan_types[]" value="ssl_check" id="ssl_check" checked>
+                        <label class="form-check-label" for="ssl_check">
+                            SSL/TLS Security Check
+                            <small class="d-block text-muted">Verify SSL certificate and encryption</small>
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="scan_types[]" value="web_scan" id="web_scan" checked>
+                        <label class="form-check-label" for="web_scan">
+                            Web Application Scan
+                            <small class="d-block text-muted">Check for common web vulnerabilities</small>
+                        </label>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="scan_types[]" value="dns_check" id="dns_check">
+                        <label class="form-check-label" for="dns_check">
+                            DNS Security Analysis
+                            <small class="d-block text-muted">Analyze DNS configuration and security</small>
+                        </label>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <button type="submit" class="btn scanner-submit-btn w-100">
+                    <span class="btn-text">
+                        <i class="bi bi-shield-shaded"></i>
+                        {{ button_text if button_text else 'Start Free Security Scan' }}
+                    </span>
+                    <span class="btn-spinner d-none">
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        Analyzing Security...
+                    </span>
+                </button>
+                
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: 0%" id="progressBar"></div>
+                    </div>
+                    <div class="status-text" id="statusText">Initializing scan...</div>
+                </div>
+            </form>
+            
+            <div id="scanResults" class="scan-results d-none">
+                <div class="alert alert-success">
+                    <h5><i class="bi bi-check-circle"></i> Security Scan Initiated!</h5>
+                    <p>Your comprehensive security scan has been started. You'll receive a detailed report via email within 5-10 minutes.</p>
+                    <div class="scan-id">Scan ID: <span id="scanIdDisplay"></span></div>
+                </div>
+            </div>
+            
+            <div class="security-badges">
+                <div class="security-badge">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Secure Scanning</span>
+                </div>
+                <div class="security-badge">
+                    <i class="bi bi-envelope-check"></i>
+                    <span>No Spam</span>
+                </div>
+                <div class="security-badge">
+                    <i class="bi bi-lightning"></i>
+                    <span>Fast Results</span>
+                </div>
+                <div class="security-badge">
+                    <i class="bi bi-eye-slash"></i>
+                    <span>Privacy Protected</span>
+                </div>
+            </div>
+            
+            <div class="trust-indicators">
+                <p><i class="bi bi-shield-fill-check"></i> Your data is encrypted and protected</p>
+                <p><i class="bi bi-clock"></i> Scan results typically ready in 5-10 minutes</p>
+                {% if company_name %}
+                <p><i class="bi bi-telephone"></i> Questions? Contact {{ company_name }} support</p>
+                {% endif %}
+                
+                {% if not hide_branding %}
+                <div class="powered-by">
+                    <i class="bi bi-lightning-charge"></i>
+                    <span>Powered by CybrScan Security Platform</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Scanner JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('scannerForm');
+            const submitBtn = form.querySelector('.scanner-submit-btn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnSpinner = submitBtn.querySelector('.btn-spinner');
+            const resultsDiv = document.getElementById('scanResults');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const statusText = document.getElementById('statusText');
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Disable form and show loading
+                submitBtn.disabled = true;
+                btnText.classList.add('d-none');
+                btnSpinner.classList.remove('d-none');
+                progressContainer.style.display = 'block';
+                
+                // Simulate progress
+                simulateProgress();
+                
+                try {
+                    const formData = new FormData(form);
+                    const data = Object.fromEntries(formData.entries());
+                    
+                    // Handle scan types array
+                    const scanTypes = formData.getAll('scan_types[]');
+                    data.scan_types = scanTypes;
+                    
+                    const response = await fetch('/scanner/api/submit-scan', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Show success message
+                        document.getElementById('scanIdDisplay').textContent = result.scan_id;
+                        resultsDiv.classList.remove('d-none');
+                        
+                        // Hide form
+                        form.style.display = 'none';
+                        
+                        // Track conversion if analytics are enabled
+                        if (typeof gtag !== 'undefined') {
+                            gtag('event', 'conversion', {
+                                'send_to': 'AW-CONVERSION_ID/CONVERSION_LABEL',
+                                'transaction_id': result.scan_id
+                            });
+                        }
+                        
+                        // Track Facebook pixel if enabled
+                        if (typeof fbq !== 'undefined') {
+                            fbq('track', 'Lead', {
+                                content_name: 'Security Scan',
+                                content_category: 'Security',
+                                value: 0,
+                                currency: 'USD'
+                            });
+                        }
+                        
+                    } else {
+                        throw new Error(result.error || 'Scan submission failed');
+                    }
+                    
+                } catch (error) {
+                    console.error('Scan submission error:', error);
+                    alert('There was an error submitting your scan. Please try again.');
+                    
+                    // Reset form
+                    submitBtn.disabled = false;
+                    btnText.classList.remove('d-none');
+                    btnSpinner.classList.add('d-none');
+                    progressContainer.style.display = 'none';
+                }
+            });
+            
+            function simulateProgress() {
+                const stages = [
+                    { progress: 20, text: 'Validating URL...' },
+                    { progress: 40, text: 'Initializing security checks...' },
+                    { progress: 60, text: 'Scanning for vulnerabilities...' },
+                    { progress: 80, text: 'Analyzing results...' },
+                    { progress: 100, text: 'Generating report...' }
+                ];
+                
+                let currentStage = 0;
+                
+                const updateProgress = () => {
+                    if (currentStage < stages.length) {
+                        const stage = stages[currentStage];
+                        progressBar.style.width = stage.progress + '%';
+                        statusText.textContent = stage.text;
+                        currentStage++;
+                        
+                        setTimeout(updateProgress, 1000 + Math.random() * 1000);
+                    }
+                };
+                
+                updateProgress();
+            }
+            
+            // Auto-detect colors from website if enabled
+            {% if auto_detect_colors %}
+            const urlInput = document.getElementById('target_url');
+            let colorDetectionTimeout;
+            
+            urlInput.addEventListener('input', function() {
+                clearTimeout(colorDetectionTimeout);
+                const url = this.value.trim();
+                
+                if (url && isValidURL(url)) {
+                    colorDetectionTimeout = setTimeout(() => {
+                        detectWebsiteColors(url);
+                    }, 2000);
+                }
+            });
+            
+            function isValidURL(string) {
+                try {
+                    new URL(string);
+                    return true;
+                } catch (_) {
+                    return false;
+                }
+            }
+            
+            async function detectWebsiteColors(url) {
+                try {
+                    const response = await fetch('/scanner/api/detect-colors', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            url: url,
+                            scanner_id: '{{ scanner_id }}'
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success && result.colors) {
+                        // Apply detected colors to the scanner
+                        applyColors(result.colors);
+                    }
+                } catch (error) {
+                    console.log('Color detection failed:', error);
+                }
+            }
+            
+            function applyColors(colors) {
+                const root = document.documentElement;
+                if (colors.primary_color) root.style.setProperty('--primary-color', colors.primary_color);
+                if (colors.secondary_color) root.style.setProperty('--secondary-color', colors.secondary_color);
+                if (colors.accent_color) root.style.setProperty('--accent-color', colors.accent_color);
+                if (colors.button_color) root.style.setProperty('--button-color', colors.button_color);
+            }
+            {% endif %}
+        });
+    </script>
+    
+    {% if analytics_code %}
+    <!-- Analytics Code -->
+    {{ analytics_code|safe }}
+    {% endif %}
+    
+    {% if facebook_pixel %}
+    <!-- Facebook Pixel Code -->
+    <script>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '{{ facebook_pixel }}');
+        fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+        src="https://www.facebook.com/tr?id={{ facebook_pixel }}&ev=PageView&noscript=1"
+    /></noscript>
+    {% endif %}
+</body>
+</html>

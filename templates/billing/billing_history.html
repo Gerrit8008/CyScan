@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Billing History - CybrScan{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-receipt mr-2"></i>
+                        Billing History
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{{ url_for('billing.manage_subscription') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-cog"></i> Manage Subscription
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in transactions %}
+                                <tr>
+                                    <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        {% if transaction.transaction_type == 'commission' %}
+                                            MSP Commission - {{ transaction.subscription_level.title() }}
+                                        {% else %}
+                                            Subscription - {{ transaction.subscription_level.title() }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if transaction.transaction_type == 'commission' %}
+                                            <span class="text-success">+${{ "%.2f"|format(transaction.amount) }}</span>
+                                        {% else %}
+                                            ${{ "%.2f"|format(transaction.amount) }}
+                                        {% endif %}
+                                        <small class="text-muted">{{ transaction.currency.upper() }}</small>
+                                    </td>
+                                    <td>
+                                        {% if transaction.status == 'completed' %}
+                                            <span class="badge badge-success">Completed</span>
+                                        {% elif transaction.status == 'pending' %}
+                                            <span class="badge badge-warning">Pending</span>
+                                        {% elif transaction.status == 'failed' %}
+                                            <span class="badge badge-danger">Failed</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">{{ transaction.status.title() }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if transaction.transaction_type == 'commission' %}
+                                            <span class="badge badge-info">Commission</span>
+                                        {% else %}
+                                            <span class="badge badge-primary">Subscription</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-receipt text-muted" style="font-size: 3rem;"></i>
+                        <h4 class="mt-3 text-muted">No billing history</h4>
+                        <p class="text-muted">Your billing transactions will appear here once you make a payment.</p>
+                        <a href="{{ url_for('billing.upgrade') }}" class="btn btn-primary">
+                            <i class="fas fa-credit-card"></i> Upgrade Subscription
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

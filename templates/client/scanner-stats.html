@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner Statistics - {{ scanner.name }}</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon.png.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .sidebar {
+            background-color: #2c3e50;
+            color: white;
+            min-height: 100vh;
+            padding-top: 2rem;
+        }
+        .sidebar-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .sidebar-link i {
+            margin-right: 0.75rem;
+            width: 24px;
+            text-align: center;
+        }
+        .stat-card {
+            transition: transform 0.2s;
+            border: none;
+            border-radius: 15px;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        .metric-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .lead-row:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar">
+                <div class="px-3">
+                    <h4 class="mb-4">🛡️ CybrScan</h4>
+                    <ul class="nav nav-pills flex-column">
+                        <li class="nav-item">
+                            <a class="sidebar-link" href="/client/dashboard">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="sidebar-link active" href="/client/scanners">
+                                <i class="bi bi-shield-check"></i> My Scanners
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="sidebar-link" href="/client/reports">
+                                <i class="bi bi-file-earmark-text"></i> Reports
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="sidebar-link" href="/client/settings">
+                                <i class="bi bi-gear"></i> Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h3 mb-1">Scanner Statistics</h1>
+                        <p class="text-muted mb-0">{{ scanner.name }}</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="/client/scanners/{{ scanner.id }}/view" class="btn btn-outline-secondary">
+                            <i class="bi bi-eye me-2"></i>View Details
+                        </a>
+                        <a href="/client/scanners/{{ scanner.id }}/edit" class="btn btn-primary">
+                            <i class="bi bi-pencil me-2"></i>Edit Scanner
+                        </a>
+                        <a href="/client/scanners" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Scanners
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card stat-card shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="metric-icon bg-primary bg-opacity-10 mx-auto">
+                                    <i class="bi bi-bar-chart-line text-primary"></i>
+                                </div>
+                                <h3 class="text-primary">{{ statistics.total_scans }}</h3>
+                                <p class="text-muted mb-0">Total Scans</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="metric-icon bg-success bg-opacity-10 mx-auto">
+                                    <i class="bi bi-shield-check text-success"></i>
+                                </div>
+                                <h3 class="text-success">{{ statistics.avg_security_score }}%</h3>
+                                <p class="text-muted mb-0">Avg Security Score</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="metric-icon bg-info bg-opacity-10 mx-auto">
+                                    <i class="bi bi-people text-info"></i>
+                                </div>
+                                <h3 class="text-info">{{ statistics.unique_companies }}</h3>
+                                <p class="text-muted mb-0">Unique Companies</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card shadow-sm">
+                            <div class="card-body text-center">
+                                <div class="metric-icon bg-warning bg-opacity-10 mx-auto">
+                                    <i class="bi bi-graph-up text-warning"></i>
+                                </div>
+                                <h3 class="text-warning">{{ statistics.conversion_rate }}%</h3>
+                                <p class="text-muted mb-0">Lead Conversion</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="row mb-4">
+                    <!-- Monthly Trends -->
+                    <div class="col-md-8">
+                        <div class="card shadow-sm">
+                            <div class="card-header">
+                                <h5 class="mb-0">Scan Activity Over Time</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="monthlyTrendsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Risk Distribution -->
+                    <div class="col-md-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header">
+                                <h5 class="mb-0">Risk Distribution</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="riskDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Metrics -->
+                <div class="row mb-4">
+                    <!-- Company Sizes -->
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header">
+                                <h5 class="mb-0">Company Size Distribution</h5>
+                            </div>
+                            <div class="card-body">
+                                {% for size, count in statistics.company_sizes.items() %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>{{ size }}</span>
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress me-2" style="width: 100px; height: 8px;">
+                                            <div class="progress-bar" style="width: {{ (count / statistics.total_scans * 100) if statistics.total_scans > 0 else 0 }}%;"></div>
+                                        </div>
+                                        <span class="text-muted">{{ count }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Targets -->
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header">
+                                <h5 class="mb-0">Top Scanned Targets</h5>
+                            </div>
+                            <div class="card-body">
+                                {% for target, count in statistics.top_targets %}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-truncate">{{ target }}</span>
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress me-2" style="width: 100px; height: 8px;">
+                                            <div class="progress-bar bg-info" style="width: {{ (count / statistics.total_scans * 100) if statistics.total_scans > 0 else 0 }}%;"></div>
+                                        </div>
+                                        <span class="text-muted">{{ count }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recent Scanner Activity</h5>
+                        <span class="badge bg-primary">{{ recent_scans|length }} recent scans</span>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_scans %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Lead Name</th>
+                                        <th>Email</th>
+                                        <th>Company</th>
+                                        <th>Target</th>
+                                        <th>Security Score</th>
+                                        <th>Risk Level</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for scan in recent_scans %}
+                                    <tr class="lead-row">
+                                        <td>{{ scan.timestamp[:10] if scan.timestamp else 'Unknown' }}</td>
+                                        <td>
+                                            <strong>{{ scan.lead_name or 'Anonymous' }}</strong>
+                                            {% if scan.lead_phone %}
+                                            <br><small class="text-muted">{{ scan.lead_phone }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if scan.lead_email %}
+                                            <a href="mailto:{{ scan.lead_email }}" class="text-decoration-none">
+                                                {{ scan.lead_email }}
+                                            </a>
+                                            {% else %}
+                                            <span class="text-muted">Not provided</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ scan.lead_company or 'Unknown' }}
+                                            {% if scan.company_size and scan.company_size != 'Unknown' %}
+                                            <br><small class="badge bg-light text-dark">{{ scan.company_size }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td><code>{{ scan.target or 'N/A' }}</code></td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if scan.security_score >= 80 else 'warning' if scan.security_score >= 60 else 'danger' }}">
+                                                {{ scan.security_score or 'N/A' }}%
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if scan.risk_level == 'Low' else 'warning' if scan.risk_level == 'Medium' else 'danger' }}">
+                                                {{ scan.risk_level or 'Medium' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-bar-chart-line text-muted" style="font-size: 4rem;"></i>
+                            <h5 class="mt-3 text-muted">No Scanner Activity Yet</h5>
+                            <p class="text-muted">Once people start using your scanner, their activity will appear here.</p>
+                            <a href="/client/scanners/{{ scanner.id }}/view" class="btn btn-primary">
+                                <i class="bi bi-eye me-2"></i>View Scanner Details
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Export Options -->
+                {% if recent_scans %}
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card shadow-sm">
+                            <div class="card-header">
+                                <h5 class="mb-0">Export & Actions</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button class="btn btn-outline-primary" onclick="exportToCSV()">
+                                        <i class="bi bi-download me-2"></i>Export to CSV
+                                    </button>
+                                    <button class="btn btn-outline-success" onclick="emailReport()">
+                                        <i class="bi bi-envelope me-2"></i>Email Report
+                                    </button>
+                                    <button class="btn btn-outline-info" onclick="shareStats()">
+                                        <i class="bi bi-share me-2"></i>Share Statistics
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Monthly Trends Chart
+            const monthlyCtx = document.getElementById('monthlyTrendsChart').getContext('2d');
+            const monthlyData = {{ statistics.monthly_scans|tojson }};
+            const monthlyLabels = Object.keys(monthlyData);
+            const monthlyValues = Object.values(monthlyData);
+
+            new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: monthlyLabels,
+                    datasets: [{
+                        label: 'Scans per Month',
+                        data: monthlyValues,
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Risk Distribution Chart
+            const riskCtx = document.getElementById('riskDistributionChart').getContext('2d');
+            const riskData = {{ statistics.risk_distribution|tojson }};
+
+            new Chart(riskCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Low Risk', 'Medium Risk', 'High Risk'],
+                    datasets: [{
+                        data: [riskData.Low || 0, riskData.Medium || 0, riskData.High || 0],
+                        backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        });
+
+        function exportToCSV() {
+            // This would implement CSV export functionality
+            alert('CSV export functionality would be implemented here');
+        }
+
+        function emailReport() {
+            // This would implement email report functionality
+            alert('Email report functionality would be implemented here');
+        }
+
+        function shareStats() {
+            // This would implement share functionality
+            alert('Share statistics functionality would be implemented here');
+        }
+    </script>
+</body>
+</html>

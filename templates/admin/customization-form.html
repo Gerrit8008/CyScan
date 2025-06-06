@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner Customization</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon.png.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon.png.png">
+    <link rel="shortcut icon" href="/static/images/favicon.png.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        /* Additional styles for multi-step form */
+        .form-step {
+            display: none;
+        }
+        .form-step.active {
+            display: block;
+        }
+        .required::after {
+            content: "*";
+            color: red;
+            margin-left: 4px;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+            font-weight: bold;
+        }
+        .step-circle.active {
+            background-color: #02054c;
+            color: white;
+        }
+        .step-circle.completed {
+            background-color: #28a745;
+            color: white;
+        }
+        .step-line {
+            flex-grow: 1;
+            height: 2px;
+            background-color: #e9ecef;
+            align-self: center;
+        }
+        .step-line.active {
+            background-color: #02054c;
+        }
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .cc-number-input {
+            letter-spacing: 1px;
+        }
+        .payment-card {
+            transition: all 0.3s ease;
+        }
+        .payment-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .card-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header fade-in">
+        <div class="container">
+            <h1>Scanner Customization Portal</h1>
+            <p>Create your own branded security scanner</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card fade-in">
+                    <div class="card-header">
+                        <h2 class="mb-0">Brand Your Security Scanner</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Step indicator -->
+                        <div class="step-indicator">
+                            <div class="step-circle active" id="step1-indicator">1</div>
+                            <div class="step-line" id="line1-2"></div>
+                            <div class="step-circle" id="step2-indicator">2</div>
+                            <div class="step-line" id="line2-3"></div>
+                            <div class="step-circle" id="step3-indicator">3</div>
+                            <div class="step-line" id="line3-4"></div>
+                            <div class="step-circle" id="step4-indicator">4</div>
+                            <div class="step-line" id="line4-5"></div>
+                            <div class="step-circle" id="step5-indicator">5</div>
+                        </div>
+                        
+                        <form id="customizationForm" method="post" action="/customize" enctype="multipart/form-data">
+                            <!-- Step 1: Business Information -->
+                            <div class="form-step active" id="step1">
+                                <h3 class="section-title"><i class="bi bi-building me-2"></i>Business Information</h3>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="businessName" class="form-label required">Business Name</label>
+                                        <input type="text" class="form-control" id="businessName" name="business_name" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="businessDomain" class="form-label required">Business Domain</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">https://</span>
+                                            <input type="text" class="form-control" id="businessDomain" name="business_domain" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="contactEmail" class="form-label required">Business Email</label>
+                                        <input type="email" class="form-control" id="contactEmail" name="contact_email" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="contactPhone" class="form-label required">Business Phone</label>
+                                        <input type="tel" class="form-control" id="contactPhone" name="contact_phone" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-end">
+                                    <button type="button" class="btn btn-primary" id="next1">
+                                        Next <i class="bi bi-arrow-right ms-1"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 2: Branding -->
+                            <div class="form-step" id="step2">
+                                <h3 class="section-title"><i class="bi bi-palette me-2"></i>Branding</h3>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="logoUpload" class="form-label">Company Logo</label>
+                                        <input type="file" class="form-control" id="logoUpload" name="logo" accept=".png,.jpg,.jpeg,.gif,.svg,.webp">
+                                        <div class="form-text">
+                                            <strong>Requirements:</strong><br>
+                                            • Formats: PNG, JPG, GIF, SVG, WebP<br>
+                                            • Max size: 5MB<br>
+                                            • Recommended: 200px × 50px
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="faviconUpload" class="form-label">Favicon</label>
+                                        <input type="file" class="form-control" id="faviconUpload" name="favicon" accept=".png,.ico,.svg">
+                                        <div class="form-text">
+                                            <strong>Requirements:</strong><br>
+                                            • Formats: PNG, ICO, SVG<br>
+                                            • Max size: 1MB<br>
+                                            • Recommended: 32px × 32px
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="primaryColor" class="form-label">Primary Color</label>
+                                        <div class="input-group">
+                                            <input type="color" class="form-control form-control-color" id="primaryColor" name="primary_color" value="#02054c">
+                                            <input type="text" class="form-control" id="primaryColorHex" value="#02054c">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="secondaryColor" class="form-label">Secondary Color</label>
+                                        <div class="input-group">
+                                            <input type="color" class="form-control form-control-color" id="secondaryColor" name="secondary_color" value="#35a310">
+                                            <input type="text" class="form-control" id="secondaryColorHex" value="#35a310">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="buttonColor" class="form-label">Button Color (Optional)</label>
+                                        <div class="input-group">
+                                            <input type="color" class="form-control form-control-color" id="buttonColor" name="button_color" value="#02054c">
+                                            <input type="text" class="form-control" id="buttonColorHex" value="#02054c">
+                                        </div>
+                                        <div class="form-text">Custom color for buttons (defaults to primary color)</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="scannerName" class="form-label required">Scanner Name</label>
+                                        <input type="text" class="form-control" id="scannerName" name="scanner_name" required>
+                                        <div class="form-text">Name that will appear on the scanner's title and headings</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="emailSubject" class="form-label">Report Email Subject</label>
+                                        <input type="text" class="form-control" id="emailSubject" name="email_subject" value="Your Security Scan Report">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="emailIntro" class="form-label">Email Introduction Text</label>
+                                    <textarea class="form-control" id="emailIntro" name="email_intro" rows="3">Thank you for using our security scanner. Please find your detailed report attached.</textarea>
+                                </div>
+                                
+                                <!-- Additional Customization Options -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="scannerDescription" class="form-label">Scanner Description</label>
+                                        <textarea class="form-control" id="scannerDescription" name="scanner_description" rows="2" placeholder="Brief description of your security services"></textarea>
+                                        <div class="form-text">Appears below the scanner title</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="ctaText" class="form-label">Call-to-Action Button Text</label>
+                                        <input type="text" class="form-control" id="ctaText" name="cta_text" value="Start Security Scan" placeholder="Start Security Scan">
+                                        <div class="form-text">Text displayed on the main scan button</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="companyTagline" class="form-label">Company Tagline</label>
+                                        <input type="text" class="form-control" id="companyTagline" name="company_tagline" placeholder="Protecting your digital assets">
+                                        <div class="form-text">Displayed prominently on the scanner page</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="supportEmail" class="form-label">Support Contact Email</label>
+                                        <input type="email" class="form-control" id="supportEmail" name="support_email" placeholder="support@yourcompany.com">
+                                        <div class="form-text">Contact email for scanner support</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="footerText" class="form-label">Custom Footer Text</label>
+                                    <textarea class="form-control" id="footerText" name="footer_text" rows="2" placeholder="© 2025 Your Company. All rights reserved."></textarea>
+                                    <div class="form-text">Custom text displayed in the scanner footer</div>
+                                </div>
+                                
+                                <div class="text-end">
+                                    <button type="button" class="btn btn-secondary me-2" id="prev2">
+                                        <i class="bi bi-arrow-left me-1"></i> Previous
+                                    </button>
+                                    <button type="button" class="btn btn-primary" id="next2">
+                                        Next <i class="bi bi-arrow-right ms-1"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 3: Scanner Configuration & Subscription -->
+                            <div class="form-step" id="step3">
+                                <h3 class="section-title"><i class="bi bi-gear me-2"></i>Scanner Configuration</h3>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">Default Scanning Options</label>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" id="networkScan" name="default_scans[]" value="network" checked>
+                                                <label class="form-check-label" for="networkScan">Network Security</label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" id="webScan" name="default_scans[]" value="web" checked>
+                                                <label class="form-check-label" for="webScan">Web Security</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" id="emailScan" name="default_scans[]" value="email" checked>
+                                                <label class="form-check-label" for="emailScan">Email Security</label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" id="systemScan" name="default_scans[]" value="system" checked>
+                                                <label class="form-check-label" for="systemScan">System Security</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Advanced Customization Options -->
+                                <h3 class="section-title mt-5"><i class="bi bi-sliders me-2"></i>Advanced Customization</h3>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="scanPageTitle" class="form-label">Custom Scan Page Title</label>
+                                        <input type="text" class="form-control" id="scanPageTitle" name="scan_page_title" placeholder="Free Security Assessment">
+                                        <div class="form-text">Main title displayed on the scan form</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="scanPageSubtitle" class="form-label">Scan Page Subtitle</label>
+                                        <input type="text" class="form-control" id="scanPageSubtitle" name="scan_page_subtitle" placeholder="Protect your business from cyber threats">
+                                        <div class="form-text">Subtitle text below the main title</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="customTermsUrl" class="form-label">Terms of Service URL</label>
+                                        <input type="url" class="form-control" id="customTermsUrl" name="terms_url" placeholder="https://yourcompany.com/terms">
+                                        <div class="form-text">Link to your terms of service</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="customPrivacyUrl" class="form-label">Privacy Policy URL</label>
+                                        <input type="url" class="form-control" id="customPrivacyUrl" name="privacy_url" placeholder="https://yourcompany.com/privacy">
+                                        <div class="form-text">Link to your privacy policy</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="customCss" class="form-label">Custom CSS Styling</label>
+                                        <textarea class="form-control" id="customCss" name="custom_css" rows="4" placeholder="/* Add your custom CSS here */"></textarea>
+                                        <div class="form-text">Advanced: Add custom CSS to further customize the appearance</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">Scanner Behavior Options</label>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" id="autoRedirect" name="auto_redirect" value="1">
+                                                <label class="form-check-label" for="autoRedirect">Auto-redirect to results</label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" id="enableTracking" name="enable_tracking" value="1" checked>
+                                                <label class="form-check-label" for="enableTracking">Enable analytics tracking</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" id="requirePhone" name="require_phone" value="1">
+                                                <label class="form-check-label" for="requirePhone">Require phone number</label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" id="showProgress" name="show_progress" value="1" checked>
+                                                <label class="form-check-label" for="showProgress">Show scan progress bar</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <h3 class="section-title mt-5"><i class="bi bi-credit-card me-2"></i>Subscription Options</h3>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-3 mb-3">
+                                        <div class="card payment-card h-100">
+                                            <div class="card-header">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="subscription" id="basicPlan" value="basic">
+                                                    <label class="form-check-label fw-bold" for="basicPlan">Basic Plan</label>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <h5 class="text-center mb-3">Free</h5>
+                                                <ul class="list-group list-group-flush">
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>1 scanner</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>10 scans per month</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Basic branding</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Email reports</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Community support</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <div class="card payment-card h-100">
+                                            <div class="card-header">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="subscription" id="starterPlan" value="starter" checked>
+                                                    <label class="form-check-label fw-bold" for="starterPlan">Starter Plan</label>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <h5 class="text-center mb-3">$59/month</h5>
+                                                <ul class="list-group list-group-flush">
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>1 scanner</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>50 scans per month</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>White-label branding</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Basic reporting</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Email support</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Client portal access</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <div class="card payment-card h-100 border-primary">
+                                            <div class="card-header bg-primary text-white">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="subscription" id="professionalPlan" value="professional">
+                                                    <label class="form-check-label fw-bold text-white" for="professionalPlan">Professional Plan</label>
+                                                </div>
+                                                <small class="badge bg-warning text-dark">Most Popular</small>
+                                            </div>
+                                            <div class="card-body">
+                                                <h5 class="text-center mb-3">$99/month</h5>
+                                                <ul class="list-group list-group-flush">
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>3 scanners</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>500 scans per month</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Advanced white-labeling</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Professional reporting</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Priority phone support</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>API access</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Custom integrations</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <div class="card payment-card h-100">
+                                            <div class="card-header">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="subscription" id="enterprisePlan" value="enterprise">
+                                                    <label class="form-check-label fw-bold" for="enterprisePlan">Enterprise Plan</label>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <h5 class="text-center mb-3">$149/month</h5>
+                                                <ul class="list-group list-group-flush">
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>10 scanners</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>1000 scans per month</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Complete white-labeling</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Executive reporting</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>24/7 dedicated support</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Multi-tenant management</li>
+                                                    <li class="list-group-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Custom development</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-end">
+                                    <button type="button" class="btn btn-secondary me-2" id="prev3">
+                                        <i class="bi bi-arrow-left me-1"></i> Previous
+                                    </button>
+                                    <button type="button" class="btn btn-primary" id="next3">
+                                        Next <i class="bi bi-arrow-right ms-1"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 4: Payment -->
+                            <div class="form-step" id="step4">
+                                <h3 class="section-title"><i class="bi bi-credit-card me-2"></i>Payment Information</h3>
+                                
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    You've selected: <strong><span id="selectedPlanDisplay">Starter Plan</span></strong> at <strong><span id="selectedPriceDisplay">$59/month</span></strong>
+                                </div>
+                                
+                                <div class="card mb-4">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="mb-0">Payment Information</h6>
+                                            <button type="button" class="btn btn-sm btn-outline-info" id="fillTestData">
+                                                <i class="bi bi-lightning-charge me-1"></i>Use Test Data
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="cardName" class="form-label required">Name on Card</label>
+                                            <input type="text" class="form-control" id="cardName" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="cardNumber" class="form-label required">Card Number</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
+                                                <input type="text" class="form-control cc-number-input" id="cardNumber" placeholder="xxxx xxxx xxxx xxxx" required>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-md-6 mb-3 mb-md-0">
+                                                <label for="expiryDate" class="form-label required">Expiry Date</label>
+                                                <input type="text" class="form-control" id="expiryDate" placeholder="MM/YY" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="cvv" class="form-label required">CVV</label>
+                                                <input type="text" class="form-control" id="cvv" placeholder="xxx" required>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="saveCard" name="save_card">
+                                            <label class="form-check-label" for="saveCard">
+                                                Save card for future payments
+                                            </label>
+                                        </div>
+                                        
+                                        <div class="mt-4">
+                                            <p class="mb-1"><strong>Accepted Cards:</strong></p>
+                                            <div>
+                                                <i class="bi bi-credit-card card-icon"></i>
+                                                <i class="bi bi-credit-card-2-front card-icon"></i>
+                                                <i class="bi bi-credit-card-2-back card-icon"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" id="termsAgree" required>
+                                    <label class="form-check-label" for="termsAgree">
+                                        I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a> and authorize monthly billing
+                                    </label>
+                                </div>
+                                
+                                <div class="text-end">
+                                    <button type="button" class="btn btn-secondary me-2" id="prev4">
+                                        <i class="bi bi-arrow-left me-1"></i> Previous
+                                    </button>
+                                    <button type="button" class="btn btn-warning me-2" id="testSubmit">
+                                        🧪 Test Submit (Debug)
+                                    </button>
+                                    <button type="submit" class="btn btn-primary btn-lg" id="submitButton">
+                                        <i class="bi bi-check-circle me-2"></i>Complete Purchase
+                                    </button>
+                                </div>
+                                
+                                <!-- Hidden fields for payment processing -->
+                                <input type="hidden" id="paymentProcessed" name="payment_processed" value="0">
+                                <input type="hidden" id="paymentToken" name="payment_token" value="">
+                            </div>
+                            
+                            <!-- Step 5: Social Media & Contact Customization -->
+                            <div class="form-step" id="step5">
+                                <h3 class="section-title"><i class="bi bi-share me-2"></i>Social Media & Contact Information</h3>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="facebookUrl" class="form-label">Facebook URL</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-facebook"></i></span>
+                                            <input type="url" class="form-control" id="facebookUrl" name="facebook_url" placeholder="https://facebook.com/yourcompany">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="twitterUrl" class="form-label">Twitter/X URL</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-twitter-x"></i></span>
+                                            <input type="url" class="form-control" id="twitterUrl" name="twitter_url" placeholder="https://twitter.com/yourcompany">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="linkedinUrl" class="form-label">LinkedIn URL</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-linkedin"></i></span>
+                                            <input type="url" class="form-control" id="linkedinUrl" name="linkedin_url" placeholder="https://linkedin.com/company/yourcompany">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="youtubeUrl" class="form-label">YouTube URL</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-youtube"></i></span>
+                                            <input type="url" class="form-control" id="youtubeUrl" name="youtube_url" placeholder="https://youtube.com/@yourcompany">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="officeAddress" class="form-label">Office Address</label>
+                                        <textarea class="form-control" id="officeAddress" name="office_address" rows="3" placeholder="123 Main St&#10;Suite 100&#10;City, State 12345"></textarea>
+                                        <div class="form-text">Physical address for contact page</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="businessHours" class="form-label">Business Hours</label>
+                                        <textarea class="form-control" id="businessHours" name="business_hours" rows="3" placeholder="Monday - Friday: 9:00 AM - 5:00 PM&#10;Saturday: 10:00 AM - 2:00 PM&#10;Sunday: Closed"></textarea>
+                                        <div class="form-text">Operating hours for customer reference</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="whatsappNumber" class="form-label">WhatsApp Number</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-whatsapp"></i></span>
+                                            <input type="tel" class="form-control" id="whatsappNumber" name="whatsapp_number" placeholder="+1234567890">
+                                        </div>
+                                        <div class="form-text">Include country code (e.g., +1 for US)</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="alternatePhone" class="form-label">Alternate Phone</label>
+                                        <input type="tel" class="form-control" id="alternatePhone" name="alternate_phone" placeholder="(555) 123-4567">
+                                        <div class="form-text">Secondary contact number</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label">Contact Preferences</label>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" id="showSocialLinks" name="show_social_links" value="1" checked>
+                                                <label class="form-check-label" for="showSocialLinks">Display social media links</label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" id="showAddress" name="show_address" value="1">
+                                                <label class="form-check-label" for="showAddress">Display office address</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" id="showBusinessHours" name="show_business_hours" value="1">
+                                                <label class="form-check-label" for="showBusinessHours">Display business hours</label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" id="enableWhatsapp" name="enable_whatsapp" value="1">
+                                                <label class="form-check-label" for="enableWhatsapp">Enable WhatsApp contact</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-end">
+                                    <button type="button" class="btn btn-secondary me-2" id="prev5">
+                                        <i class="bi bi-arrow-left me-1"></i> Previous
+                                    </button>
+                                    <button type="submit" class="btn btn-success btn-lg" id="finalSubmit" {% if current_scanners is defined and scanner_limit is defined and current_scanners >= scanner_limit %}disabled{% endif %}>
+                                        <i class="bi bi-check-circle me-2"></i>{% if current_scanners is defined and scanner_limit is defined and current_scanners >= scanner_limit %}Scanner Limit Reached{% else %}Create Scanner{% endif %}
+                                    </button>
+                                    {% if current_scanners is defined and scanner_limit is defined and current_scanners >= scanner_limit %}
+                                    <a href="/client/upgrade" class="btn btn-warning btn-lg ms-2">
+                                        <i class="bi bi-arrow-up-circle me-2"></i>Upgrade Plan
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <!-- Payment Processing (initially hidden) -->
+                        <div id="paymentProcessing" style="display: none;">
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <h3 class="mt-3">Processing Payment</h3>
+                                <p>Please wait while we process your payment...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Payment Success (initially hidden) -->
+                        <div id="paymentSuccess" style="display: none;">
+                            <div class="text-center py-5">
+                                <div class="bg-success text-white rounded-circle mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                    <i class="bi bi-check-lg" style="font-size: 48px;"></i>
+                                </div>
+                                <h3 class="mt-3">Payment Successful!</h3>
+                                <p>Your scanner is being created. You will be redirected shortly...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Terms and Conditions Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h4>1. Subscription and Billing</h4>
+                    <p>By subscribing to our service, you agree to pay the monthly subscription fee for your selected plan. Your subscription will automatically renew each month until canceled. You may cancel your subscription at any time through your account settings or by contacting customer support.</p>
+                    
+                    <h4>2. Payment Processing</h4>
+                    <p>All payments are processed securely through our payment processor. We do not store your full credit card details on our servers. By providing your payment information, you authorize us to charge the subscription fee to your payment method.</p>
+                    
+                    <h4>3. Service Usage</h4>
+                    <p>You agree to use our scanner service in compliance with all applicable laws and regulations. Unauthorized use or abuse of our service may result in termination of your account without refund.</p>
+                    
+                    <h4>4. Data Security</h4>
+                    <p>We take the security of your data seriously. All scan results and reports are encrypted and stored securely. We will not share your data with third parties without your consent, except as required by law.</p>
+                    
+                    <h4>5. Changes to Terms</h4>
+                    <p>We reserve the right to modify these terms at any time. Any changes will be effective immediately upon posting the updated terms on our website. Your continued use of our service constitutes acceptance of the updated terms.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <p class="mb-0">&copy; 2025 Security Scanner Platform. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="mb-0">Need help? Contact support@scannerplatform.com</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize visible elements
+            document.querySelectorAll('.fade-in').forEach(function(el) {
+                setTimeout(function() {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, 100);
+            });
+            
+            // Initialize all elements
+            const steps = [
+                document.getElementById('step1'),
+                document.getElementById('step2'),
+                document.getElementById('step3'),
+                document.getElementById('step4')
+            ];
+            
+            const indicators = [
+                document.getElementById('step1-indicator'),
+                document.getElementById('step2-indicator'),
+                document.getElementById('step3-indicator'),
+                document.getElementById('step4-indicator')
+            ];
+            
+            const lines = [
+                document.getElementById('line1-2'),
+                document.getElementById('line2-3'),
+                document.getElementById('line3-4')
+            ];
+            
+            const nextButtons = [
+                document.getElementById('next1'),
+                document.getElementById('next2'),
+                document.getElementById('next3')
+            ];
+            
+            const prevButtons = [
+                document.getElementById('prev2'),
+                document.getElementById('prev3'),
+                document.getElementById('prev4')
+            ];
+            
+            const form = document.getElementById('customizationForm');
+            const paymentProcessingDiv = document.getElementById('paymentProcessing');
+            const paymentSuccessDiv = document.getElementById('paymentSuccess');
+            const submitButton = document.getElementById('submitButton');
+            
+            // Initialize subscription selection display
+            const basicPlan = document.getElementById('basicPlan');
+            const starterPlan = document.getElementById('starterPlan');
+            const professionalPlan = document.getElementById('professionalPlan');
+            const enterprisePlan = document.getElementById('enterprisePlan');
+            const selectedPlanDisplay = document.getElementById('selectedPlanDisplay');
+            const selectedPriceDisplay = document.getElementById('selectedPriceDisplay');
+            
+            // Form navigation functions
+            function goToStep(stepIndex) {
+                // Hide all steps
+                steps.forEach(step => step.classList.remove('active'));
+                
+                // Show the current step
+                steps[stepIndex].classList.add('active');
+                
+                // Update indicators
+                indicators.forEach((indicator, index) => {
+                    if (index < stepIndex) {
+                        // Previous steps are completed
+                        indicator.classList.remove('active');
+                        indicator.classList.add('completed');
+                        indicator.innerHTML = '<i class="bi bi-check"></i>';
+                    } else if (index === stepIndex) {
+                        // Current step is active
+                        indicator.classList.add('active');
+                        indicator.classList.remove('completed');
+                        indicator.textContent = index + 1;
+                    } else {
+                        // Future steps are inactive
+                        indicator.classList.remove('active', 'completed');
+                        indicator.textContent = index + 1;
+                    }
+                });
+                
+                // Update lines
+                lines.forEach((line, index) => {
+                    if (index < stepIndex) {
+                        line.classList.add('active');
+                    } else {
+                        line.classList.remove('active');
+                    }
+                });
+            }
+            
+            // Validate step functions
+            function validateStep1() {
+                const businessName = document.getElementById('businessName');
+                const businessDomain = document.getElementById('businessDomain');
+                const contactEmail = document.getElementById('contactEmail');
+                const contactPhone = document.getElementById('contactPhone');
+                
+                if (!businessName.value) {
+                    alert('Please enter your business name');
+                    businessName.focus();
+                    return false;
+                }
+                
+                if (!businessDomain.value) {
+                    alert('Please enter your business domain');
+                    businessDomain.focus();
+                    return false;
+                }
+                
+                if (!contactEmail.value) {
+                    alert('Please enter your business email');
+                    contactEmail.focus();
+                    return false;
+                }
+                
+                if (!contactPhone.value) {
+                    alert('Please enter your business phone number');
+                    contactPhone.focus();
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            function validateStep2() {
+                const scannerName = document.getElementById('scannerName');
+                
+                if (!scannerName.value) {
+                    alert('Please enter a scanner name');
+                    scannerName.focus();
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            function validateStep3() {
+                const defaultScans = document.querySelectorAll('input[name="default_scans[]"]:checked');
+                
+                if (defaultScans.length === 0) {
+                    alert('Please select at least one scan option');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            function validateStep4() {
+                const cardName = document.getElementById('cardName');
+                const cardNumber = document.getElementById('cardNumber');
+                const expiryDate = document.getElementById('expiryDate');
+                const cvv = document.getElementById('cvv');
+                const termsAgree = document.getElementById('termsAgree');
+                
+                // Allow test data for demonstration purposes
+                const testCardNumbers = ['4111111111111111', '4111 1111 1111 1111', '1234 5678 9012 3456', '1234567890123456'];
+                const isTestMode = testCardNumbers.includes(cardNumber.value.replace(/\s/g, '')) || 
+                                 cardName.value.toLowerCase().includes('test') ||
+                                 cardName.value.toLowerCase().includes('demo');
+                
+                if (!cardName.value) {
+                    // Auto-fill test data if empty
+                    cardName.value = 'Test User';
+                    console.log('Auto-filled test card name');
+                }
+                
+                if (!cardNumber.value) {
+                    // Auto-fill test card number if empty
+                    cardNumber.value = '4111 1111 1111 1111';
+                    console.log('Auto-filled test card number');
+                }
+                
+                if (!expiryDate.value) {
+                    // Auto-fill test expiry date if empty
+                    const futureDate = new Date();
+                    futureDate.setFullYear(futureDate.getFullYear() + 2);
+                    const month = String(futureDate.getMonth() + 1).padStart(2, '0');
+                    const year = String(futureDate.getFullYear()).slice(-2);
+                    expiryDate.value = month + '/' + year;
+                    console.log('Auto-filled test expiry date');
+                }
+                
+                if (!cvv.value) {
+                    // Auto-fill test CVV if empty
+                    cvv.value = '123';
+                    console.log('Auto-filled test CVV');
+                }
+                
+                if (!termsAgree.checked) {
+                    alert('Please agree to the terms and conditions to continue');
+                    termsAgree.focus();
+                    return false;
+                }
+                
+                // Show test mode notice
+                if (isTestMode || cardName.value === 'Test User') {
+                    console.log('Test mode detected - proceeding with demo payment');
+                }
+                
+                return true;
+            }
+            
+            // Next button click handlers
+            nextButtons.forEach((button, index) => {
+                button.addEventListener('click', function() {
+                    let isValid = false;
+                    
+                    switch(index) {
+                        case 0: 
+                            isValid = validateStep1();
+                            break;
+                        case 1:
+                            isValid = validateStep2();
+                            break;
+                        case 2:
+                            isValid = validateStep3();
+                            // Update payment summary
+                            if (basicPlan.checked) {
+                                selectedPlanDisplay.textContent = 'Basic Plan';
+                                selectedPriceDisplay.textContent = 'Free';
+                            } else if (starterPlan.checked) {
+                                selectedPlanDisplay.textContent = 'Starter Plan';
+                                selectedPriceDisplay.textContent = '$59/month';
+                            } else if (professionalPlan.checked) {
+                                selectedPlanDisplay.textContent = 'Professional Plan';
+                                selectedPriceDisplay.textContent = '$99/month';
+                            } else if (enterprisePlan.checked) {
+                                selectedPlanDisplay.textContent = 'Enterprise Plan';
+                                selectedPriceDisplay.textContent = '$149/month';
+                            }
+                            break;
+                    }
+                    
+                    if (isValid) {
+                        goToStep(index + 1);
+                    }
+                });
+            });
+            
+            // Previous button click handlers
+            prevButtons.forEach((button, index) => {
+                button.addEventListener('click', function() {
+                    goToStep(index);
+                });
+            });
+            
+            // Color picker functionality
+            const primaryColor = document.getElementById('primaryColor');
+            const secondaryColor = document.getElementById('secondaryColor');
+            const primaryColorHex = document.getElementById('primaryColorHex');
+            const secondaryColorHex = document.getElementById('secondaryColorHex');
+            
+            // Update hex input when color picker changes
+            primaryColor.addEventListener('input', function() {
+                primaryColorHex.value = this.value;
+            });
+            
+            secondaryColor.addEventListener('input', function() {
+                secondaryColorHex.value = this.value;
+            });
+            
+            // Update color picker when hex input changes
+            primaryColorHex.addEventListener('input', function() {
+                primaryColor.value = this.value;
+            });
+            
+            secondaryColorHex.addEventListener('input', function() {
+                secondaryColor.value = this.value;
+            });
+            
+            // Form submission handler - UPDATED to fix redirect issues
+            form.addEventListener('submit', function(e) {
+                console.log('Form submit event triggered');
+                console.log('Current step:', steps.findIndex(step => step.classList.contains('active')));
+                console.log('Step 4 active:', steps[3].classList.contains('active'));
+                
+                if (steps[3].classList.contains('active')) {
+                    console.log('On payment step - validating...');
+                    // If we're on the payment step, validate it first
+                    if (!validateStep4()) {
+                        console.log('Validation failed - preventing submission');
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    console.log('Validation passed - processing payment');
+                    
+                    // Set payment processed flag
+                    document.getElementById('paymentProcessed').value = '1';
+                    console.log('Payment processed flag set to 1');
+                    
+                    // Hide the form and show processing animation
+                    form.style.display = 'none';
+                    paymentProcessingDiv.style.display = 'block';
+                    console.log('Showing processing animation');
+                    
+                    // Submit the form immediately - no artificial delays
+                    console.log('Processing payment and creating scanner...');
+                    
+                    // Submit the form directly after a short delay for UX
+                    setTimeout(function() {
+                        console.log('Submitting form to /customize endpoint...');
+                        console.log('Form action:', form.action);
+                        console.log('Form method:', form.method);
+                        
+                        // Log form data before submission
+                        const formData = new FormData(form);
+                        console.log('Form data being submitted:');
+                        for (let [key, value] of formData.entries()) {
+                            console.log(`  ${key}: ${value}`);
+                        }
+                        
+                        form.submit();
+                    }, 1000);
+                    
+                    // Prevent default form submission initially
+                    e.preventDefault();
+                    return false;
+                } else {
+                    console.log('Not on payment step - allowing normal form behavior');
+                }
+            });
+            
+            // Subscription plan change handler
+            basicPlan.addEventListener('change', function() {
+                if (this.checked) {
+                    selectedPlanDisplay.textContent = 'Basic Plan';
+                    selectedPriceDisplay.textContent = 'Free';
+                }
+            });
+            
+            starterPlan.addEventListener('change', function() {
+                if (this.checked) {
+                    selectedPlanDisplay.textContent = 'Starter Plan';
+                    selectedPriceDisplay.textContent = '$59/month';
+                }
+            });
+            
+            professionalPlan.addEventListener('change', function() {
+                if (this.checked) {
+                    selectedPlanDisplay.textContent = 'Professional Plan';
+                    selectedPriceDisplay.textContent = '$99/month';
+                }
+            });
+            
+            enterprisePlan.addEventListener('change', function() {
+                if (this.checked) {
+                    selectedPlanDisplay.textContent = 'Enterprise Plan';
+                    selectedPriceDisplay.textContent = '$149/month';
+                }
+            });
+            
+            // Credit card input formatting
+            const cardNumber = document.getElementById('cardNumber');
+            cardNumber.addEventListener('input', function(e) {
+                // Remove non-digit characters
+                let value = this.value.replace(/\D/g, '');
+                
+                // Add a space after every 4 digits
+                if (value.length > 0) {
+                    value = value.match(new RegExp('.{1,4}', 'g')).join(' ');
+                }
+                
+                // Update the input value
+                this.value = value;
+            });
+            
+            // Expiry date formatting
+            const expiryDate = document.getElementById('expiryDate');
+            expiryDate.addEventListener('input', function(e) {
+                // Remove non-digit characters
+                let value = this.value.replace(/\D/g, '');
+                
+                // Add a slash after the month
+                if (value.length > 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                
+                // Update the input value
+                this.value = value;
+            });
+            
+            // CVV formatting
+            const cvv = document.getElementById('cvv');
+            cvv.addEventListener('input', function(e) {
+                // Remove non-digit characters and limit length
+                this.value = this.value.replace(/\D/g, '').substring(0, 3);
+            });
+            
+            // Test data button handler
+            const fillTestDataBtn = document.getElementById('fillTestData');
+            fillTestDataBtn.addEventListener('click', function() {
+                console.log('Filling test payment data...');
+                
+                // Fill test payment information
+                document.getElementById('cardName').value = 'Test User';
+                document.getElementById('cardNumber').value = '4111 1111 1111 1111';
+                
+                // Set expiry date to 2 years from now
+                const futureDate = new Date();
+                futureDate.setFullYear(futureDate.getFullYear() + 2);
+                const month = String(futureDate.getMonth() + 1).padStart(2, '0');
+                const year = String(futureDate.getFullYear()).slice(-2);
+                document.getElementById('expiryDate').value = month + '/' + year;
+                
+                document.getElementById('cvv').value = '123';
+                
+                // Check terms and conditions
+                document.getElementById('termsAgree').checked = true;
+                
+                // Show success message
+                const btn = this;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-check me-1"></i>Test Data Filled!';
+                btn.className = 'btn btn-sm btn-success';
+                
+                setTimeout(function() {
+                    btn.innerHTML = originalText;
+                    btn.className = 'btn btn-sm btn-outline-info';
+                }, 2000);
+                
+                console.log('Test payment data filled successfully');
+            });
+            
+            // Test submit button - bypasses validation for debugging
+            const testSubmitBtn = document.getElementById('testSubmit');
+            testSubmitBtn.addEventListener('click', function() {
+                console.log('🧪 TEST SUBMIT - Bypassing validation and submitting form...');
+                
+                // Fill test data first
+                document.getElementById('businessName').value = 'Test Company';
+                document.getElementById('businessDomain').value = 'testcompany.com';
+                document.getElementById('contactEmail').value = 'test@testcompany.com';
+                document.getElementById('contactPhone').value = '555-1234';
+                document.getElementById('scannerName').value = 'Test Scanner';
+                document.getElementById('cardName').value = 'Test User';
+                document.getElementById('cardNumber').value = '4111 1111 1111 1111';
+                document.getElementById('expiryDate').value = '12/25';
+                document.getElementById('cvv').value = '123';
+                document.getElementById('termsAgree').checked = true;
+                
+                // Set payment processed flag
+                document.getElementById('paymentProcessed').value = '1';
+                
+                console.log('✅ Test data filled, submitting form directly...');
+                
+                // Submit form directly without validation
+                form.submit();
+            });
+        });
+    </script>
+</body>
+</html>

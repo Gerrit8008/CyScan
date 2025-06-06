@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}MSP Revenue Dashboard - CybrScan{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Revenue Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3>${{ "%.2f"|format(total_commission) }}</h3>
+                    <p>Total Commission Earned</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3>{{ current_subscription.title() }}</h3>
+                    <p>Current Plan</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3>{{ subscription_features.features.scanners }}</h3>
+                    <p>Scanner Limit</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-danger">
+                <div class="inner">
+                    <h3>{{ subscription_features.features.scans_per_month }}</h3>
+                    <p>Monthly Scans</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Commission History -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        Commission History
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if commission_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Commission</th>
+                                    <th>Status</th>
+                                    <th>Plan Level</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in commission_transactions %}
+                                <tr>
+                                    <td>{{ transaction.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <span class="text-success">+${{ "%.2f"|format(transaction.amount) }}</span>
+                                    </td>
+                                    <td>
+                                        {% if transaction.status == 'completed' %}
+                                            <span class="badge badge-success">Paid</span>
+                                        {% elif transaction.status == 'pending' %}
+                                            <span class="badge badge-warning">Pending</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">{{ transaction.status.title() }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-primary">{{ transaction.subscription_level.title() }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-line text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3 text-muted">No commission history yet</h5>
+                        <p class="text-muted">Start generating revenue by creating scanners and acquiring clients.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- MSP Tools -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-tools"></i> MSP Tools</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="{{ url_for('client.scanners') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-plus text-primary"></i>
+                            Create New Scanner
+                        </a>
+                        <a href="{{ url_for('client.customize_scanner') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-palette text-info"></i>
+                            Customize Branding
+                        </a>
+                        <a href="{{ url_for('client.reports') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-chart-bar text-success"></i>
+                            View Reports
+                        </a>
+                        <a href="{{ url_for('billing.upgrade') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-rocket text-warning"></i>
+                            Upgrade Plan
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Revenue Calculator -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6><i class="fas fa-calculator"></i> Revenue Calculator</h6>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="calc-clients">Clients per month:</label>
+                        <input type="number" id="calc-clients" class="form-control" value="10" min="1">
+                    </div>
+                    
+                    <button id="calc-revenue" class="btn btn-primary btn-sm btn-block">
+                        Calculate Potential
+                    </button>
+                    
+                    <div id="calc-results" style="display: none;" class="mt-3">
+                        <div class="alert alert-info alert-sm">
+                            <div id="calc-breakdown"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Growth Tips -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6><i class="fas fa-lightbulb"></i> Growth Tips</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success"></i> Use white-label scanners on client websites</li>
+                        <li><i class="fas fa-check text-success"></i> Offer monthly security assessments</li>
+                        <li><i class="fas fa-check text-success"></i> Generate leads with free scans</li>
+                        <li><i class="fas fa-check text-success"></i> Upgrade to serve more clients</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('#calc-revenue').click(function() {
+        const clients = $('#calc-clients').val();
+        
+        $.ajax({
+            url: '{{ url_for("billing.revenue_calculator") }}',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                clients_per_month: parseInt(clients),
+                subscription_level: '{{ current_subscription }}'
+            }),
+            success: function(data) {
+                const breakdown = `
+                    <small>
+                        <div><strong>Monthly Revenue:</strong> $${data.monthly_revenue.toFixed(2)}</div>
+                        <div><strong>Monthly Cost:</strong> $${data.monthly_cost.toFixed(2)}</div>
+                        <div><strong>Net Profit:</strong> $${data.monthly_profit.toFixed(2)}</div>
+                        <div><strong>ROI:</strong> ${data.roi_percentage.toFixed(1)}%</div>
+                    </small>
+                `;
+                $('#calc-breakdown').html(breakdown);
+                $('#calc-results').show();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
