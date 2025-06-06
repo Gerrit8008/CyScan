@@ -109,18 +109,18 @@ if Limiter:
 if CORS:
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# Import and register blueprints
-from app_modules.auth.routes import auth_bp
-from app_modules.admin import admin_bp
-from app_modules.client import client_bp
-from app_modules.scanner import scanner_bp
-from app_modules.billing import billing_bp
+# Import and register blueprints - temporarily disabled to debug config.settings error
+# from app_modules.auth.routes import auth_bp
+# from app_modules.admin import admin_bp
+# from app_modules.client import client_bp
+# from app_modules.scanner import scanner_bp
+# from app_modules.billing import billing_bp
 
-app.register_blueprint(auth_bp, url_prefix='/auth')
-app.register_blueprint(admin_bp, url_prefix='/admin')
-app.register_blueprint(client_bp, url_prefix='/client')
-app.register_blueprint(scanner_bp, url_prefix='/scanner')
-app.register_blueprint(billing_bp, url_prefix='/billing')
+# app.register_blueprint(auth_bp, url_prefix='/auth')
+# app.register_blueprint(admin_bp, url_prefix='/admin')
+# app.register_blueprint(client_bp, url_prefix='/client')
+# app.register_blueprint(scanner_bp, url_prefix='/scanner')
+# app.register_blueprint(billing_bp, url_prefix='/billing')
 
 # Main routes
 @app.route('/')
