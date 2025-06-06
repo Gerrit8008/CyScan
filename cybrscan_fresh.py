@@ -76,6 +76,9 @@ class User(UserMixin):
         self.username = username
         self.email = email
         self.password_hash = password_hash
+        self.subscription_level = 'basic'
+        self.company_name = 'Demo Company'
+        self.next_billing_date = 'End of month'
 
 # In-memory user storage for testing
 users = {}
