@@ -301,7 +301,7 @@
                         <p class="text-muted">Welcome back, {{ user.username }}</p>
                     </div>
                     <div>
-                        <span class="badge bg-primary">{{ user_client.subscription_level|default('Basic')|title }}</span>
+                        <span class="badge bg-primary">{{ user.subscription_level|default('Basic')|title }}</span>
                         <span class="ms-2">{{ user.username }}</span>
                     </div>
                 </div>
@@ -508,7 +508,7 @@
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
                                     <div>
-                                        <h4 class="text-primary">{{ user_client.subscription_level|default('Basic')|title }}</h4>
+                                        <h4 class="text-primary">{{ user.subscription_level|default('Basic')|title }}</h4>
                                         <p class="text-muted mb-0">Current plan</p>
                                     </div>
                                 </div>
