@@ -11,20 +11,23 @@ import secrets
 import re
 from datetime import datetime
 
-# Simple subscription tiers for templates
+# Complete subscription tiers matching your pricing
 SUBSCRIPTION_TIERS = {
     'basic': {
         'name': 'Basic',
         'price': 0.00,
         'period': 'forever',
         'description': 'Perfect for trying out our platform',
+        'requires_payment': False,
         'features': {
             'scanners': 1,
             'scans_per_month': 10,
             'white_label': False,
             'branding': 'Basic branding',
             'reports': 'Email reports',
-            'support': 'Community support'
+            'support': 'Community support',
+            'api_access': False,
+            'client_portal': False
         }
     },
     'starter': {
@@ -32,13 +35,16 @@ SUBSCRIPTION_TIERS = {
         'price': 29.99,
         'period': 'month',
         'description': 'Great for small MSPs',
+        'requires_payment': True,
         'features': {
             'scanners': 5,
             'scans_per_month': 100,
             'white_label': True,
             'branding': 'Custom branding',
             'reports': 'PDF & Email reports',
-            'support': 'Email support'
+            'support': 'Email support',
+            'api_access': True,
+            'client_portal': True
         }
     },
     'professional': {
@@ -46,13 +52,34 @@ SUBSCRIPTION_TIERS = {
         'price': 99.99,
         'period': 'month',
         'description': 'Perfect for growing MSPs',
+        'requires_payment': True,
         'features': {
             'scanners': 25,
             'scans_per_month': 500,
             'white_label': True,
             'branding': 'Full custom branding',
             'reports': 'Advanced reporting',
-            'support': 'Priority support'
+            'support': 'Priority support',
+            'api_access': True,
+            'client_portal': True
+        }
+    },
+    'enterprise': {
+        'name': 'Enterprise',
+        'price': 299.99,
+        'period': 'month',
+        'description': 'For large MSPs and agencies',
+        'requires_payment': True,
+        'features': {
+            'scanners': 'unlimited',
+            'scans_per_month': 'unlimited',
+            'white_label': True,
+            'branding': 'Complete white-label',
+            'reports': 'Custom reporting & analytics',
+            'support': '24/7 dedicated support',
+            'api_access': True,
+            'client_portal': True,
+            'custom_integrations': True
         }
     }
 }
@@ -76,6 +103,7 @@ class User(UserMixin):
         self.username = username
         self.email = email
         self.password_hash = password_hash
+        self.role = 'client'
         self.subscription_level = 'basic'
         self.company_name = 'Demo Company'
         self.next_billing_date = 'End of month'
@@ -83,6 +111,29 @@ class User(UserMixin):
 # In-memory user storage for testing
 users = {}
 user_counter = 1
+
+# Create demo accounts
+def create_demo_accounts():
+    global user_counter
+    
+    # Demo admin account
+    admin_user = User('admin', 'admin', 'admin@cybrscan.com', generate_password_hash('admin123'))
+    admin_user.role = 'admin'
+    admin_user.subscription_level = 'enterprise'
+    admin_user.company_name = 'CybrScan Admin'
+    users['admin'] = admin_user
+    
+    # Demo client account  
+    demo_user = User('demo', 'demo', 'demo@cybrscan.com', generate_password_hash('demo123'))
+    demo_user.role = 'client'
+    demo_user.subscription_level = 'professional'
+    demo_user.company_name = 'Demo Company'
+    users['demo'] = demo_user
+    
+    user_counter = 3
+
+# Initialize demo accounts
+create_demo_accounts()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -233,6 +284,37 @@ def dashboard():
 def client_dashboard():
     """Client dashboard (alternative route)"""
     return render_template('client/client-dashboard.html', user=current_user)
+
+@app.route('/admin/dashboard')
+@login_required
+def admin_dashboard():
+    """Admin dashboard"""
+    if current_user.role != 'admin':
+        flash('Access denied. Admin privileges required.', 'error')
+        return redirect(url_for('dashboard'))
+    return render_template('admin/admin-dashboard.html', user=current_user)
+
+# Login info route
+@app.route('/login-info')
+def login_info():
+    """Show demo login credentials"""
+    return jsonify({
+        'demo_accounts': {
+            'admin': {
+                'email': 'admin@cybrscan.com',
+                'password': 'admin123',
+                'role': 'admin',
+                'access': 'Full admin dashboard and settings'
+            },
+            'demo': {
+                'email': 'demo@cybrscan.com', 
+                'password': 'demo123',
+                'role': 'client',
+                'access': 'Client dashboard and scanner management'
+            }
+        },
+        'note': 'These are demo accounts for testing purposes'
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
