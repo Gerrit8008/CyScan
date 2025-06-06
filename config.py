@@ -1,6 +1,12 @@
 import os
 from datetime import timedelta
 
+# Import subscription levels for compatibility with app_modules
+try:
+    from subscription_constants import SUBSCRIPTION_LEVELS
+except ImportError:
+    SUBSCRIPTION_LEVELS = {}
+
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
@@ -61,6 +67,9 @@ class Config:
     # Security
     WTF_CSRF_ENABLED = True
     WTF_CSRF_TIME_LIMIT = None
+    
+    # Subscription levels for app_modules compatibility
+    SUBSCRIPTION_LEVELS = SUBSCRIPTION_LEVELS
 
 class DevelopmentConfig(Config):
     DEBUG = True
