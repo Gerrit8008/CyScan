@@ -13,13 +13,13 @@ logger = logging.getLogger(__name__)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 try:
-    # Import the full CybrScan application
-    from app import app
-    logger.info("✅ Successfully imported full CybrScan app")
+    # Import the fresh CybrScan application
+    from cybrscan_fresh import app
+    logger.info("✅ Successfully imported fresh CybrScan app")
     application = app
     
 except Exception as e:
-    logger.error(f"❌ Failed to import main app: {e}")
+    logger.error(f"❌ Failed to import fresh app: {e}")
     logger.info("🔄 Falling back to super minimal test app")
     
     try:
