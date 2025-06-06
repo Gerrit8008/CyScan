@@ -3,9 +3,13 @@ Completely fresh CybrScan app with original functionality
 Using a new filename to avoid any caching issues
 """
 import os
-from flask import Flask, render_template, request, jsonify
-from flask_login import LoginManager
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 from scanner import SecurityScanner
+import secrets
+import re
+from datetime import datetime
 
 # Create Flask app
 app = Flask(__name__)
@@ -16,11 +20,24 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'cybrscan-fresh-key')
 # Initialize login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'index'
+login_manager.login_view = 'login'
+login_manager.login_message = 'Please log in to access this page.'
+
+# Simple User class for testing
+class User(UserMixin):
+    def __init__(self, id, username, email, password_hash):
+        self.id = id
+        self.username = username
+        self.email = email
+        self.password_hash = password_hash
+
+# In-memory user storage for testing
+users = {}
+user_counter = 1
 
 @login_manager.user_loader
 def load_user(user_id):
-    return None
+    return users.get(user_id)
 
 # Routes using original templates
 @app.route('/')
@@ -77,6 +94,96 @@ def scan_website():
 def demo_scanner():
     """Demo scanner page"""
     return render_template('scanner/demo.html') if os.path.exists('templates/scanner/demo.html') else jsonify({'error': 'Demo template not found'})
+
+# Authentication routes
+@app.route('/auth/register', methods=['GET', 'POST'])
+def register():
+    """User registration"""
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+        company_name = request.form.get('company_name', '').strip()
+        
+        # Basic validation
+        if not email or not username or not password:
+            flash('All fields are required', 'error')
+            return render_template('auth/register.html')
+        
+        if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
+            flash('Invalid email address', 'error')
+            return render_template('auth/register.html')
+        
+        if len(password) < 6:
+            flash('Password must be at least 6 characters', 'error')
+            return render_template('auth/register.html')
+        
+        # Check if user already exists
+        for user in users.values():
+            if user.email == email:
+                flash('Email already registered', 'error')
+                return render_template('auth/register.html')
+        
+        # Create new user
+        global user_counter
+        user_id = str(user_counter)
+        password_hash = generate_password_hash(password)
+        
+        new_user = User(user_id, username, email, password_hash)
+        users[user_id] = new_user
+        user_counter += 1
+        
+        flash('Registration successful! Please log in.', 'success')
+        return redirect(url_for('login'))
+    
+    return render_template('auth/register.html')
+
+@app.route('/auth/login', methods=['GET', 'POST'])
+def login():
+    """User login"""
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '').strip()
+        
+        if not email or not password:
+            flash('Email and password are required', 'error')
+            return render_template('auth/login.html')
+        
+        # Find user by email
+        user = None
+        for u in users.values():
+            if u.email == email:
+                user = u
+                break
+        
+        if user and check_password_hash(user.password_hash, password):
+            login_user(user)
+            flash('Login successful!', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Invalid email or password', 'error')
+    
+    return render_template('auth/login.html')
+
+@app.route('/auth/logout')
+@login_required
+def logout():
+    """User logout"""
+    logout_user()
+    flash('You have been logged out', 'info')
+    return redirect(url_for('index'))
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    """User dashboard"""
+    return render_template('client/client-dashboard.html', user=current_user)
+
+@app.route('/client/dashboard')
+@login_required
+def client_dashboard():
+    """Client dashboard (alternative route)"""
+    return render_template('client/client-dashboard.html', user=current_user)
 
 if __name__ == '__main__':
     app.run(debug=True)
