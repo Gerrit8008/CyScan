@@ -283,7 +283,23 @@ def dashboard():
                          scans_limit=100,
                          scanners_count=2,
                          recent_scans=[],
-                         subscription_levels=SUBSCRIPTION_TIERS)
+                         subscription_levels=SUBSCRIPTION_TIERS,
+                         scanners=[],
+                         total_scans=42,
+                         critical_issues=3,
+                         avg_security_score=85,
+                         scan_trends={'scanner_growth': 15, 'scan_growth': 25},
+                         critical_issues_trend=-2,
+                         security_score_trend=5,
+                         security_status='Good',
+                         high_issues=7,
+                         medium_issues=12,
+                         recent_activities=[],
+                         scan_history=[],
+                         scanner_limit=5,
+                         stats={'scanners_count': 2},
+                         client=current_user,
+                         recommendations=[])
 
 @app.route('/client/dashboard')
 @login_required
