@@ -13,14 +13,22 @@ logger = logging.getLogger(__name__)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 try:
-    # Try the minimal CybrScan application first
-    from app_minimal import app
-    logger.info("✅ Successfully imported minimal CybrScan app")
+    # Import the full CybrScan application
+    from app import app
+    logger.info("✅ Successfully imported full CybrScan app")
     application = app
     
 except Exception as e:
-    logger.error(f"❌ Failed to import minimal app: {e}")
-    logger.info("🔄 Falling back to basic Flask app")
+    logger.error(f"❌ Failed to import main app: {e}")
+    logger.info("🔄 Trying minimal app as fallback")
+    
+    try:
+        from app_minimal import app
+        logger.info("✅ Successfully imported minimal CybrScan app")
+        application = app
+    except Exception as e2:
+        logger.error(f"❌ Failed to import minimal app: {e2}")
+        logger.info("🔄 Using basic Flask fallback")
     
     # Fallback to a simple working app
     try:
