@@ -44,7 +44,7 @@ class User(UserMixin):
     
     def can_scan(self):
         """Check if user can perform scans based on subscription"""
-        from config.settings import Config
+        from config import Config
         
         subscription_info = Config.SUBSCRIPTION_LEVELS.get(self.subscription_level, {})
         monthly_limit = subscription_info.get('monthly_scans', 0)
@@ -106,7 +106,7 @@ class User(UserMixin):
     
     def get_subscription_info(self):
         """Get subscription information"""
-        from config.settings import Config
+        from config import Config
         return Config.SUBSCRIPTION_LEVELS.get(self.subscription_level, {})
     
     def get_remaining_scans(self):

@@ -4,7 +4,7 @@ Main Application Routes
 
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for
 from flask_login import current_user
-from config.settings import Config
+from config import Config
 import logging
 
 logger = logging.getLogger(__name__)

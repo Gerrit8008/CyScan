@@ -6,7 +6,7 @@ Professional Grade Security Assessment Tools
 from flask import Flask
 from flask_login import LoginManager
 from flask_cors import CORS
-from config.settings import Config
+from config import Config
 import os
 import logging
 from datetime import datetime
